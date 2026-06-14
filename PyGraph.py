@@ -20,28 +20,38 @@ import sys
 import os
 import ctypes
 
+def wykryj_jezyk_systemu():
+    try:
+        if sys.platform == 'win32' and ctypes.windll.kernel32.GetUserDefaultUILanguage() == 1045: 
+            return "pl"
+        j, _ = locale.getlocale()
+        if j and 'pl' in j.lower(): 
+            return "pl"
+    except: 
+        pass
+    return "pl"
 
 TEXTS = {
     "pl": {
         "title": "PyGraph - Edytor z Warstwami",
         "tools": "Narzędzia",
-        "open": "Otwórz",
-        "undo": "↩ Cofnij (Undo)",
+        "open": "⇧ Otwórz",
+        "undo": "⟲ Cofnij (Undo)",
         "transform": "Transformacje:",
-        "rotate": "Obróć o 90°",
+        "rotate": "⟳ Obróć o 90°",
         "adjust": "Dopasowanie warstwy:",
         "brightness": "Jasność",
         "contrast": "Kontrast",
         "saturation": "Nasycenie",
         "sharpness": "Ostrość",
         "scale": "Skala warstwy",
-        "apply_adj": "Zastosuj dopasowanie",
+        "apply_adj": "✓ Zastosuj dopasowanie",
         "interactive": "Narzędzia interaktywne:",
-        "move": "✋ Przesuń",
-        "brush": "🖌 Pędzel",
+        "move": "⬀ Przesuń",
+        "brush": "✎ Pędzel",
         "text": "T Tekst",
-        "rectangle": "⬜ Prostokąt",
-        "color": "🎨 Kolor",
+        "rectangle": "▭ Prostokąt",
+        "color": "■ Kolor",
         "size": "Grubość pędzla",
         "font_size": "Wielkość tekstu",
         "effects": "Filtry (na warstwie):",
@@ -51,17 +61,17 @@ TEXTS = {
         "invert": "Negatyw",
         "emboss": "Płaskorzeźba",
         "edges": "Krawędzie",
-        "apply_filter": "Zastosuj filtr",
-        "remove_bg": "✨ Usuń tło (AI)",
+        "apply_filter": "✓ Zastosuj filtr",
+        "remove_bg": "✂ Usuń tło (AI)",
         "crop": "Kadrowanie (Cały obszar):",
-        "crop_on": "✂ Aktywuj ramkę",
-        "crop_off": "Wyłącz ramkę",
-        "crop_apply": "Zastosuj cięcie",
-        "save": "💾 Eksportuj obraz",
+        "crop_on": "◩ Aktywuj ramkę",
+        "crop_off": "◪ Wyłącz ramkę",
+        "crop_apply": "✓ Zastosuj cięcie",
+        "save": "⭳ Eksportuj obraz",
         "layers": "WARSTWY",
-        "layer_add": "➕ Nowa",
-        "layer_insert": "🖼 Wstaw",
-        "layer_del": "🗑 Usuń",
+        "layer_add": "＋ Nowa",
+        "layer_insert": "⍐ Wstaw",
+        "layer_del": "✖ Usuń",
         "rename_title": "Zmiana nazwy",
         "rename_prompt": "Podaj nową nazwę warstwy:",
         "opacity": "Krycie warstwy:",
@@ -81,23 +91,23 @@ TEXTS = {
     "en": {
         "title": "PyGraph - Layered Editor",
         "tools": "Tools",
-        "open": "Open",
-        "undo": "↩ Undo",
+        "open": "⇧ Open",
+        "undo": "⟲ Undo",
         "transform": "Transformations:",
-        "rotate": "Rotate 90°",
+        "rotate": "⟳ Rotate 90°",
         "adjust": "Layer Adjustments:",
         "brightness": "Brightness",
         "contrast": "Contrast",
         "saturation": "Saturation",
         "sharpness": "Sharpness",
         "scale": "Layer Scale",
-        "apply_adj": "Apply Adjustments",
+        "apply_adj": "✓ Apply Adjustments",
         "interactive": "Interactive Tools:",
-        "move": "✋ Move",
-        "brush": "🖌 Brush",
+        "move": "⬀ Move",
+        "brush": "✎ Brush",
         "text": "T Text",
-        "rectangle": "⬜ Rect",
-        "color": "🎨 Color",
+        "rectangle": "▭ Rect",
+        "color": "■ Color",
         "size": "Brush Size",
         "font_size": "Font Size",
         "effects": "Filters (Active Layer):",
@@ -107,17 +117,17 @@ TEXTS = {
         "invert": "Invert",
         "emboss": "Emboss",
         "edges": "Find Edges",
-        "apply_filter": "Apply Filter",
-        "remove_bg": "✨ Remove BG (AI)",
+        "apply_filter": "✓ Apply Filter",
+        "remove_bg": "✂ Remove BG (AI)",
         "crop": "Cropping (Canvas):",
-        "crop_on": "✂ Activate Frame",
-        "crop_off": "Deactivate Frame",
-        "crop_apply": "Apply Crop",
-        "save": "💾 Export Image",
+        "crop_on": "◩ Activate Frame",
+        "crop_off": "◪ Deactivate Frame",
+        "crop_apply": "✓ Apply Crop",
+        "save": "⭳ Export Image",
         "layers": "LAYERS",
-        "layer_add": "➕ Add",
-        "layer_insert": "🖼 Insert",
-        "layer_del": "🗑 Delete",
+        "layer_add": "＋ Add",
+        "layer_insert": "⍐ Insert",
+        "layer_del": "✖ Delete",
         "rename_title": "Rename",
         "rename_prompt": "Enter new layer name:",
         "opacity": "Layer Opacity:",
@@ -141,103 +151,22 @@ ctk.set_default_color_theme("blue")
 
 class PyGraph(ctk.CTk):
     
-
-
-
-    def wykryj_jezyk(self):
-        try:
-            if sys.platform == 'win32' and ctypes.windll.kernel32.GetUserDefaultUILanguage() == 1045: 
-                return "pl"
-            j, _ = locale.getlocale()
-            if j and 'pl' in j.lower(): 
-                return "pl"
-        except: 
-            pass
-        return "pl"
-
-    def _update_text(self, widget_name, text_key):
-        try:
-            widget = getattr(self, widget_name)
-            widget.configure(text=self.t[text_key])
-        except Exception:
-            pass 
-
-    def przelacz_jezyk(self):
-        stary_jezyk = self.lang
-        obecny_wybor = self.combo_filtry.get()
-        wybrany_klucz = "bw"
-        for k in self.klucze_filtrow:
-            if TEXTS[stary_jezyk][k] == obecny_wybor:
-                wybrany_klucz = k
-                break
-
-        self.lang = "en" if self.lang == "pl" else "pl"
-        self.t = TEXTS[self.lang]
-        
-        self.title(self.t["title"])
-        self.btn_lang.configure(text="🇵🇱 PL" if self.lang == "pl" else "🇬🇧 EN")
-        
-        self._update_text("lbl_narzedzia", "tools")
-        self._update_text("btn_otworz", "open")
-        self._update_text("btn_cofnij", "undo")
-        self._update_text("lbl_transform", "transform")
-        self._update_text("btn_obroc", "rotate")
-        self._update_text("lbl_adjust", "adjust")
-        self._update_text("lbl_brightness", "brightness")
-        self._update_text("lbl_contrast", "contrast")
-        self._update_text("lbl_saturation", "saturation")
-        self._update_text("lbl_sharpness", "sharpness")
-        self._update_text("lbl_scale", "scale")
-        self._update_text("btn_apply_adj", "apply_adj")
-        self._update_text("lbl_interactive", "interactive")
-        self._update_text("btn_move", "move")
-        self._update_text("btn_brush", "brush")
-        self._update_text("btn_text", "text")
-        self._update_text("btn_rect", "rectangle")
-        self._update_text("btn_color", "color")
-        self._update_text("lbl_size", "size")
-        self._update_text("lbl_font_size", "font_size")
-        self._update_text("lbl_efekty", "effects")
-        self._update_text("btn_zastosuj_filtr", "apply_filter")
-        self._update_text("btn_rembg", "remove_bg")
-        self._update_text("lbl_kadrowanie", "crop")
-        self._update_text("lbl_w", "width")
-        self._update_text("lbl_h", "height")
-        self._update_text("btn_dokladne_crop", "crop_apply")
-        self._update_text("lbl_layers_title", "layers")
-        self._update_text("btn_add_layer", "layer_add")
-        self._update_text("btn_insert_layer", "layer_insert")
-        self._update_text("btn_del_layer", "layer_del")
-        self._update_text("lbl_opacity", "opacity")
-        self._update_text("btn_zapisz", "save")
-        
-
-        self._update_text("text_label", "help")
-
-        if self.aktywne_narzedzie == 'crop':
-            self._update_text("btn_crop", "crop_off")
-        else:
-            self._update_text("btn_crop", "crop_on")
-            
-        nowe_wartosci = [self.t[k] for k in self.klucze_filtrow]
-        self.combo_filtry.configure(values=nowe_wartosci)
-        self.combo_filtry.set(self.t[wybrany_klucz])
-        
-        self.zaktualizuj_styl_narzedzi()
-        
-
-
-
-
-
     def __init__(self):
         super().__init__()
         
-        self.lang = self.wykryj_jezyk()
+        self.lang = wykryj_jezyk_systemu()
         self.t = TEXTS[self.lang]
 
         self.title(self.t["title"])
-        self.geometry("1400x900")
+        
+        try:
+            with open("pygraph_cfg.txt", "r") as f:
+                self.geometry(f.read().strip())
+        except:
+            self.geometry("1400x900")
+            
+        self.minsize(1000, 650)
+        self.protocol("WM_DELETE_WINDOW", self.zamykanie_okna)
 
         self.warstwy = [] 
         self.aktywna_warstwa = -1
@@ -254,7 +183,7 @@ class PyGraph(ctk.CTk):
         self.last_x = 0
         self.last_y = 0
         
-        self.current_color = "#e74c3c" 
+        self.current_color = "#ffffff" 
         self.draw_points = []
         self.temp_draw_id = None
         self.warstwa_podgladowa = None
@@ -262,16 +191,16 @@ class PyGraph(ctk.CTk):
 
         self.klucze_filtrow = ["bw", "blur", "sharpen", "invert", "emboss", "edges"]
 
-        self.grid_columnconfigure(0, minsize=350)
+        self.grid_columnconfigure(0, minsize=350, weight=0)
         self.grid_columnconfigure(1, weight=1) 
-        self.grid_columnconfigure(2, minsize=300)
+        self.grid_columnconfigure(2, minsize=260, weight=0)
         self.grid_rowconfigure(0, weight=1)
         
-
-        self.panel_lewy = ctk.CTkFrame(self, corner_radius=0)
+        self.panel_lewy = ctk.CTkFrame(self, corner_radius=0, width=350)
         self.panel_lewy.grid(row=0, column=0, sticky="nsew")
+        self.panel_lewy.grid_propagate(False)
 
-        self.btn_lang = ctk.CTkButton(self.panel_lewy, text="🇵🇱 PL" if self.lang == "pl" else "🇬🇧 EN", width=60, height=28, corner_radius=6, command=self.przelacz_jezyk, fg_color="#333", hover_color="#444")
+        self.btn_lang = ctk.CTkButton(self.panel_lewy, text="PL" if self.lang == "pl" else "EN", width=60, height=28, corner_radius=6, command=self.przelacz_jezyk, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_lang.pack(anchor="nw", padx=10, pady=10)
 
         self.panel_narzedzi = ctk.CTkScrollableFrame(self.panel_lewy, fg_color="transparent")
@@ -280,43 +209,42 @@ class PyGraph(ctk.CTk):
         self.lbl_narzedzia = ctk.CTkLabel(self.panel_narzedzi, text=self.t["tools"], font=ctk.CTkFont(size=20, weight="bold"))
         self.lbl_narzedzia.pack(pady=(0, 10))
 
-        self.btn_otworz = ctk.CTkButton(self.panel_narzedzi, text=self.t["open"], height=32, corner_radius=6, command=self.otworz_obraz)
+        self.btn_otworz = ctk.CTkButton(self.panel_narzedzi, text=self.t["open"], height=32, corner_radius=6, command=self.otworz_obraz, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_otworz.pack(pady=5, padx=20, fill="x")
         
-        self.btn_cofnij = ctk.CTkButton(self.panel_narzedzi, text=self.t["undo"], height=32, corner_radius=6, fg_color="transparent", border_width=1, border_color="#555", text_color="gray80", state="disabled", command=self.cofnij)
+        self.btn_cofnij = ctk.CTkButton(self.panel_narzedzi, text=self.t["undo"], height=32, corner_radius=6, fg_color="transparent", border_width=1, border_color="white", text_color="gray50", state="disabled", command=self.cofnij, hover_color="#333")
         self.btn_cofnij.pack(pady=5, padx=20, fill="x")
 
         self.lbl_transform = ctk.CTkLabel(self.panel_narzedzi, text=self.t["transform"], font=ctk.CTkFont(weight="bold"))
         self.lbl_transform.pack(pady=(15, 0))
         
-        self.btn_obroc = ctk.CTkButton(self.panel_narzedzi, text=self.t["rotate"], height=32, corner_radius=6, fg_color="#404040", hover_color="#555555", command=self.obroc_obraz)
+        self.btn_obroc = ctk.CTkButton(self.panel_narzedzi, text=self.t["rotate"], height=32, corner_radius=6, command=self.obroc_obraz, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_obroc.pack(pady=5, padx=20, fill="x")
 
         self.lbl_interactive = ctk.CTkLabel(self.panel_narzedzi, text=self.t["interactive"], font=ctk.CTkFont(weight="bold"))
         self.lbl_interactive.pack(pady=(20, 5))
 
         ramka_narzedzi = ctk.CTkFrame(self.panel_narzedzi, fg_color="transparent")
-        ramka_narzedzi.pack(pady=5, padx=20, fill="x")
+        ramka_narzedzi.pack(pady=5, padx=15, fill="x")
+        ramka_narzedzi.grid_columnconfigure(0, weight=1)
+        ramka_narzedzi.grid_columnconfigure(1, weight=1)
         
         self.btn_move = self.stworz_przycisk_narzedzia(ramka_narzedzi, self.t["move"], 'move')
-        self.btn_move.pack(side="left", padx=2, expand=True, fill="x")
+        self.btn_move.grid(row=0, column=0, padx=2, pady=2, sticky="ew")
         
         self.btn_brush = self.stworz_przycisk_narzedzia(ramka_narzedzi, self.t["brush"], 'brush')
-        self.btn_brush.pack(side="left", padx=2, expand=True, fill="x")
+        self.btn_brush.grid(row=0, column=1, padx=2, pady=2, sticky="ew")
         
-        ramka_narzedzi2 = ctk.CTkFrame(self.panel_narzedzi, fg_color="transparent")
-        ramka_narzedzi2.pack(pady=5, padx=20, fill="x")
-
-        self.btn_text = self.stworz_przycisk_narzedzia(ramka_narzedzi2, self.t["text"], 'text')
-        self.btn_text.pack(side="left", padx=2, expand=True, fill="x")
+        self.btn_text = self.stworz_przycisk_narzedzia(ramka_narzedzi, self.t["text"], 'text')
+        self.btn_text.grid(row=1, column=0, padx=2, pady=2, sticky="ew")
         
-        self.btn_rect = self.stworz_przycisk_narzedzia(ramka_narzedzi2, self.t["rectangle"], 'rect')
-        self.btn_rect.pack(side="left", padx=2, expand=True, fill="x")
+        self.btn_rect = self.stworz_przycisk_narzedzia(ramka_narzedzi, self.t["rectangle"], 'rect')
+        self.btn_rect.grid(row=1, column=1, padx=2, pady=2, sticky="ew")
 
         ramka_opcji = ctk.CTkFrame(self.panel_narzedzi, fg_color="transparent")
         ramka_opcji.pack(pady=10, padx=20, fill="x")
         
-        self.btn_color = ctk.CTkButton(ramka_opcji, text=self.t["color"], height=30, corner_radius=6, border_width=2, border_color="#555", fg_color=self.current_color, hover_color=self.current_color, text_color="white", command=self.wybierz_kolor)
+        self.btn_color = ctk.CTkButton(ramka_opcji, text=self.t["color"], height=30, corner_radius=6, command=self.wybierz_kolor, fg_color="transparent", border_width=1, border_color="white", text_color=self.current_color, hover_color="#333")
         self.btn_color.pack(side="top", fill="x", pady=(0, 10))
         
         ramka_grubosc = ctk.CTkFrame(ramka_opcji, fg_color="transparent")
@@ -352,20 +280,20 @@ class PyGraph(ctk.CTk):
             setattr(self, attr, suwak)
             setattr(self, f"lbl_{nazwa}", lbl)
 
-        self.btn_apply_adj = ctk.CTkButton(self.panel_narzedzi, text=self.t["apply_adj"], height=32, corner_radius=6, fg_color="#1f538d", command=self.zastosuj_suwaki)
+        self.btn_apply_adj = ctk.CTkButton(self.panel_narzedzi, text=self.t["apply_adj"], height=32, corner_radius=6, command=self.zastosuj_suwaki, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_apply_adj.pack(pady=(15, 0), padx=20, fill="x")
 
         self.lbl_efekty = ctk.CTkLabel(self.panel_narzedzi, text=self.t["effects"], font=ctk.CTkFont(weight="bold"))
         self.lbl_efekty.pack(pady=(20, 5))
         
-        self.combo_filtry = ctk.CTkComboBox(self.panel_narzedzi, values=[self.t[k] for k in self.klucze_filtrow], state="readonly", corner_radius=6)
+        self.combo_filtry = ctk.CTkComboBox(self.panel_narzedzi, values=[self.t[k] for k in self.klucze_filtrow], state="readonly", corner_radius=6, fg_color="#242424", border_color="white", text_color="white")
         self.combo_filtry.pack(pady=(5,10), padx=20, fill="x")
         self.combo_filtry.set(self.t["bw"])
         
-        self.btn_zastosuj_filtr = ctk.CTkButton(self.panel_narzedzi, text=self.t["apply_filter"], height=32, corner_radius=6, fg_color="#1f538d", command=self.zastosuj_wybrany_filtr)
+        self.btn_zastosuj_filtr = ctk.CTkButton(self.panel_narzedzi, text=self.t["apply_filter"], height=32, corner_radius=6, command=self.zastosuj_wybrany_filtr, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_zastosuj_filtr.pack(pady=(0, 10), padx=20, fill="x")
 
-        self.btn_rembg = ctk.CTkButton(self.panel_narzedzi, text=self.t["remove_bg"], height=32, corner_radius=6, fg_color="#6B21A8", hover_color="#581C87", command=self.usun_tlo)
+        self.btn_rembg = ctk.CTkButton(self.panel_narzedzi, text=self.t["remove_bg"], height=32, corner_radius=6, command=self.usun_tlo, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_rembg.pack(pady=(10, 5), padx=20, fill="x")
 
         self.lbl_kadrowanie = ctk.CTkLabel(self.panel_narzedzi, text=self.t["crop"], font=ctk.CTkFont(weight="bold"))
@@ -375,15 +303,17 @@ class PyGraph(ctk.CTk):
         self.btn_crop.pack(pady=(5,5), padx=20, fill="x")
         
         self.ramka_px = ctk.CTkFrame(self.panel_narzedzi, fg_color="transparent")
-        self.ramka_px.pack(pady=5, padx=20)
+        self.ramka_px.pack(pady=5, padx=15, fill="x")
+        self.ramka_px.grid_columnconfigure(0, weight=1)
+        self.ramka_px.grid_columnconfigure(1, weight=1)
+        
         self.entry_x, self.lbl_x = self.stworz_pole_px(self.ramka_px, "X:", 0, 0)
         self.entry_y, self.lbl_y = self.stworz_pole_px(self.ramka_px, "Y:", 0, 1)
         self.entry_w, self.lbl_w = self.stworz_pole_px(self.ramka_px, self.t["width"], 1, 0)
         self.entry_h, self.lbl_h = self.stworz_pole_px(self.ramka_px, self.t["height"], 1, 1)
         
-        self.btn_dokladne_crop = ctk.CTkButton(self.panel_narzedzi, text=self.t["crop_apply"], height=32, corner_radius=6, fg_color="#404040", hover_color="#555", command=self.zastosuj_ciecie)
+        self.btn_dokladne_crop = ctk.CTkButton(self.panel_narzedzi, text=self.t["crop_apply"], height=32, corner_radius=6, command=self.zastosuj_ciecie_z_pol, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_dokladne_crop.pack(pady=5, padx=20, fill="x")
-
 
         self.panel_obrazu = ctk.CTkFrame(self)
         self.panel_obrazu.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
@@ -397,9 +327,9 @@ class PyGraph(ctk.CTk):
         self.canvas.bind("<B1-Motion>", self.on_canvas_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_canvas_release)
 
-
-        self.panel_prawy = ctk.CTkFrame(self, corner_radius=0)
+        self.panel_prawy = ctk.CTkFrame(self, corner_radius=0, width=260)
         self.panel_prawy.grid(row=0, column=2, sticky="nsew")
+        self.panel_prawy.grid_propagate(False)
 
         self.lbl_layers_title = ctk.CTkLabel(self.panel_prawy, text=self.t["layers"], font=ctk.CTkFont(size=18, weight="bold"))
         self.lbl_layers_title.pack(pady=(20, 10))
@@ -407,20 +337,20 @@ class PyGraph(ctk.CTk):
         ramka_kontrolek_warstw = ctk.CTkFrame(self.panel_prawy, fg_color="transparent")
         ramka_kontrolek_warstw.pack(fill="x", padx=10, pady=5)
         
-        self.btn_add_layer = ctk.CTkButton(ramka_kontrolek_warstw, text=self.t["layer_add"], width=65, height=28, corner_radius=6, fg_color="#2E7D32", hover_color="#1B5E20", command=self.dodaj_pusta_warstwe)
+        self.btn_add_layer = ctk.CTkButton(ramka_kontrolek_warstw, text=self.t["layer_add"], width=65, height=28, corner_radius=6, command=self.dodaj_pusta_warstwe, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_add_layer.pack(side="left", padx=2, expand=True)
         
-        self.btn_insert_layer = ctk.CTkButton(ramka_kontrolek_warstw, text=self.t["layer_insert"], width=65, height=28, corner_radius=6, fg_color="#1f538d", hover_color="#184271", command=self.wstaw_obraz)
+        self.btn_insert_layer = ctk.CTkButton(ramka_kontrolek_warstw, text=self.t["layer_insert"], width=65, height=28, corner_radius=6, command=self.wstaw_obraz, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_insert_layer.pack(side="left", padx=2, expand=True)
         
-        self.btn_del_layer = ctk.CTkButton(ramka_kontrolek_warstw, text=self.t["layer_del"], width=65, height=28, corner_radius=6, fg_color="#C62828", hover_color="#B71C1C", command=self.usun_aktywna_warstwe)
+        self.btn_del_layer = ctk.CTkButton(ramka_kontrolek_warstw, text=self.t["layer_del"], width=65, height=28, corner_radius=6, command=self.usun_aktywna_warstwe, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_del_layer.pack(side="left", padx=2, expand=True)
 
         ramka_strzalek = ctk.CTkFrame(self.panel_prawy, fg_color="transparent")
         ramka_strzalek.pack(pady=0)
-        self.btn_up_layer = ctk.CTkButton(ramka_strzalek, text="⬆", width=60, height=24, corner_radius=6, fg_color="#444", command=lambda: self.przesun_warstwe(-1))
+        self.btn_up_layer = ctk.CTkButton(ramka_strzalek, text="⏶", width=60, height=24, corner_radius=6, command=lambda: self.przesun_warstwe(-1), fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_up_layer.pack(side="left", padx=5)
-        self.btn_down_layer = ctk.CTkButton(ramka_strzalek, text="⬇", width=60, height=24, corner_radius=6, fg_color="#444", command=lambda: self.przesun_warstwe(1))
+        self.btn_down_layer = ctk.CTkButton(ramka_strzalek, text="⏷", width=60, height=24, corner_radius=6, command=lambda: self.przesun_warstwe(1), fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_down_layer.pack(side="left", padx=5)
 
         self.lbl_opacity = ctk.CTkLabel(self.panel_prawy, text=self.t["opacity"])
@@ -429,12 +359,11 @@ class PyGraph(ctk.CTk):
         self.slider_opacity.set(1.0)
         self.slider_opacity.pack(pady=(5, 15), padx=20)
 
-        self.panel_listy_warstw = ctk.CTkScrollableFrame(self.panel_prawy, fg_color="#242424", corner_radius=6)
+        self.panel_listy_warstw = ctk.CTkScrollableFrame(self.panel_prawy, fg_color="transparent", corner_radius=6)
         self.panel_listy_warstw.pack(fill="both", expand=True, padx=10, pady=5)
 
-        self.btn_zapisz = ctk.CTkButton(self.panel_prawy, text=self.t["save"], height=36, corner_radius=6, fg_color="#059669", hover_color="#047857", font=ctk.CTkFont(weight="bold"), command=self.zapisz_obraz)
+        self.btn_zapisz = ctk.CTkButton(self.panel_prawy, text=self.t["save"], height=36, corner_radius=6, command=self.zapisz_obraz, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_zapisz.pack(side="bottom", pady=(10, 20), padx=20, fill="x")
-
 
         self.bind("<Control-z>", lambda e: self.cofnij())
         self.bind("<Command-z>", lambda e: self.cofnij()) 
@@ -444,8 +373,94 @@ class PyGraph(ctk.CTk):
         self.bind("<Command-o>", lambda e: self.otworz_obraz()) 
         self.bind("<Key>", self.obsloz_skroty_narzedzi)
 
+    def stworz_pole_px(self, rodzic, tekst, rzad, kolumna):
+        ramka = ctk.CTkFrame(rodzic, fg_color="transparent")
+        ramka.grid(row=rzad, column=kolumna, padx=2, pady=2, sticky="ew")
+        lbl = ctk.CTkLabel(ramka, text=tekst, font=("Arial", 11))
+        lbl.pack(side="left")
+        entry = ctk.CTkEntry(ramka, height=28, corner_radius=4, font=("Arial", 11))
+        entry.pack(side="left", padx=2, expand=True, fill="x")
+        return entry, lbl
 
+    def zamykanie_okna(self):
+        try:
+            with open("pygraph_cfg.txt", "w") as f:
+                f.write(self.geometry())
+        except:
+            pass
+        self.destroy()
 
+    def _update_text(self, widget_name, text_key):
+        try:
+            widget = getattr(self, widget_name)
+            widget.configure(text=self.t[text_key])
+        except Exception:
+            pass 
+
+    def przelacz_jezyk(self):
+        stary_jezyk = self.lang
+        obecny_wybor = self.combo_filtry.get()
+        wybrany_klucz = "bw"
+        for k in self.klucze_filtrow:
+            if TEXTS[stary_jezyk][k] == obecny_wybor:
+                wybrany_klucz = k
+                break
+
+        self.lang = "en" if self.lang == "pl" else "pl"
+        self.t = TEXTS[self.lang]
+        
+        self.title(self.t["title"])
+        self.btn_lang.configure(text="PL" if self.lang == "pl" else "EN")
+        
+        self._update_text("lbl_narzedzia", "tools")
+        self._update_text("btn_otworz", "open")
+        self._update_text("btn_cofnij", "undo")
+        self._update_text("lbl_transform", "transform")
+        self._update_text("btn_obroc", "rotate")
+        self._update_text("lbl_adjust", "adjust")
+        self._update_text("lbl_brightness", "brightness")
+        self._update_text("lbl_contrast", "contrast")
+        self._update_text("lbl_saturation", "saturation")
+        self._update_text("lbl_sharpness", "sharpness")
+        self._update_text("lbl_scale", "scale")
+        self._update_text("btn_apply_adj", "apply_adj")
+        self._update_text("lbl_interactive", "interactive")
+        self._update_text("btn_move", "move")
+        self._update_text("btn_brush", "brush")
+        self._update_text("btn_text", "text")
+        self._update_text("btn_rect", "rectangle")
+        self._update_text("btn_color", "color")
+        self._update_text("lbl_size", "size")
+        self._update_text("lbl_font_size", "font_size")
+        self._update_text("lbl_efekty", "effects")
+        self._update_text("btn_zastosuj_filtr", "apply_filter")
+        self._update_text("btn_rembg", "remove_bg")
+        self._update_text("lbl_kadrowanie", "crop")
+        self._update_text("lbl_w", "width")
+        self._update_text("lbl_h", "height")
+        self._update_text("btn_dokladne_crop", "crop_apply")
+        self._update_text("lbl_layers_title", "layers")
+        self._update_text("btn_add_layer", "layer_add")
+        self._update_text("btn_insert_layer", "layer_insert")
+        self._update_text("btn_del_layer", "layer_del")
+        self._update_text("lbl_opacity", "opacity")
+        self._update_text("btn_zapisz", "save")
+        self._update_text("text_label", "help")
+
+        if self.aktywne_narzedzie == 'crop':
+            self._update_text("btn_crop", "crop_off")
+        else:
+            self._update_text("btn_crop", "crop_on")
+            
+        nowe_wartosci = [self.t[k] for k in self.klucze_filtrow]
+        self.combo_filtry.configure(values=nowe_wartosci)
+        self.combo_filtry.set(self.t[wybrany_klucz])
+        
+        self.zaktualizuj_styl_narzedzi()
+
+        if not self.warstwy: 
+            self.canvas.delete("all")
+            self.canvas.create_window(self.canvas.winfo_width()/2, self.canvas.winfo_height()/2, window=self.text_label, anchor="center", tags="help_text")
 
     def obsloz_skroty_narzedzi(self, event):
         if not self.warstwy: return
@@ -459,51 +474,34 @@ class PyGraph(ctk.CTk):
         elif char == 'c': self.ustaw_narzedzie('crop')
 
     def stworz_przycisk_narzedzia(self, rodzic, tekst, wartosc):
-        return ctk.CTkButton(rodzic, text=tekst, height=32, corner_radius=6, 
-                             fg_color="transparent", border_width=1, border_color="#555", 
-                             text_color="gray80", hover_color="#444", command=lambda: self.ustaw_narzedzie(wartosc))
+        return ctk.CTkButton(rodzic, text=tekst, height=32, width=50, corner_radius=6, 
+                             fg_color="transparent", border_width=1, border_color="white", 
+                             text_color="white", hover_color="#333", command=lambda: self.ustaw_narzedzie(wartosc))
 
     def zaktualizuj_styl_narzedzi(self):
-        b_move  = {"fg_color": "#1f538d", "border_width": 0, "text_color": "white"} if self.aktywne_narzedzie == 'move' else {"fg_color": "transparent", "border_width": 1, "text_color": "gray80"}
-        b_brush = {"fg_color": "#1f538d", "border_width": 0, "text_color": "white"} if self.aktywne_narzedzie == 'brush' else {"fg_color": "transparent", "border_width": 1, "text_color": "gray80"}
-        b_text  = {"fg_color": "#1f538d", "border_width": 0, "text_color": "white"} if self.aktywne_narzedzie == 'text' else {"fg_color": "transparent", "border_width": 1, "text_color": "gray80"}
-        b_rect  = {"fg_color": "#1f538d", "border_width": 0, "text_color": "white"} if self.aktywne_narzedzie == 'rect' else {"fg_color": "transparent", "border_width": 1, "text_color": "gray80"}
+        act = {"fg_color": "transparent", "text_color": "white", "border_width": 2, "border_color": "white"}
+        inact = {"fg_color": "transparent", "text_color": "white", "border_width": 1, "border_color": "white"}
         
-        self.btn_move.configure(**b_move)
-        self.btn_brush.configure(**b_brush)
-        self.btn_text.configure(**b_text)
-        self.btn_rect.configure(**b_rect)
+        self.btn_move.configure(**(act if self.aktywne_narzedzie == 'move' else inact))
+        self.btn_brush.configure(**(act if self.aktywne_narzedzie == 'brush' else inact))
+        self.btn_text.configure(**(act if self.aktywne_narzedzie == 'text' else inact))
+        self.btn_rect.configure(**(act if self.aktywne_narzedzie == 'rect' else inact))
         
         if self.aktywne_narzedzie == 'crop':
-            self.btn_crop.configure(text=self.t["crop_off"], fg_color="#1f538d", border_width=0, text_color="white")
+            self.btn_crop.configure(text=self.t["crop_off"], **act)
         else:
-            self.btn_crop.configure(text=self.t["crop_on"], fg_color="transparent", border_width=1, border_color="#555", text_color="gray80")
+            self.btn_crop.configure(text=self.t["crop_on"], **inact)
 
     def wybierz_kolor(self):
         kolor = colorchooser.askcolor(color=self.current_color)[1]
         if kolor: 
             self.current_color = kolor
-            r, g, b = tuple(int(kolor.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
-            jasnosc = (r * 299 + g * 587 + b * 114) / 1000
-            txt_color = "black" if jasnosc > 125 else "white"
-            self.btn_color.configure(fg_color=kolor, hover_color=kolor, text_color=txt_color)
-
-    def stworz_pole_px(self, rodzic, tekst, rzad, kolumna):
-        ramka = ctk.CTkFrame(rodzic, fg_color="transparent")
-        ramka.grid(row=rzad, column=kolumna, padx=5, pady=2)
-        lbl = ctk.CTkLabel(ramka, text=tekst, font=("Arial", 11))
-        lbl.pack(side="left")
-        entry = ctk.CTkEntry(ramka, width=65, height=28, corner_radius=4, font=("Arial", 11))
-        entry.pack(side="left", padx=2)
-        return entry, lbl
+            self.btn_color.configure(text_color=kolor)
 
     def aktualizuj_wymiary_w_polach(self, x=0, y=0, w=0, h=0):
         for entry, val in [(self.entry_x, str(x)), (self.entry_y, str(y)), (self.entry_w, str(w)), (self.entry_h, str(h))]:
             entry.delete(0, tk.END)
             entry.insert(0, val)
-
-
-
 
     def otworz_obraz(self):
         sciezka = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp *.webp")])
@@ -516,7 +514,7 @@ class PyGraph(ctk.CTk):
                 self.doc_size = img.size
                 self.warstwy = []
                 self.historia = []
-                self.btn_cofnij.configure(state="disabled", fg_color="transparent", text_color="gray50")
+                self.btn_cofnij.configure(state="disabled", fg_color="transparent", text_color="gray50", border_color="white")
                 
                 nazwa = os.path.basename(sciezka)[:15]
                 self.dodaj_warstwe(img, nazwa)
@@ -618,19 +616,21 @@ class PyGraph(ctk.CTk):
 
         for i in reversed(range(len(self.warstwy))):
             w = self.warstwy[i]
-            bg_color = "#1f538d" if i == self.aktywna_warstwa else "#333333"
             
-            ramka = ctk.CTkFrame(self.panel_listy_warstw, fg_color=bg_color, corner_radius=6)
+            ramka = ctk.CTkFrame(self.panel_listy_warstw, fg_color="transparent", corner_radius=6)
             ramka.pack(fill="x", pady=3, padx=2)
             
+            is_active = (i == self.aktywna_warstwa)
+            bw = 2 if is_active else 1
+            
             ikona = "👁" if w['widoczna'] else "✖"
-            btn_vis = ctk.CTkButton(ramka, text=ikona, width=30, fg_color="transparent", hover_color="#555", command=lambda idx=i: self.przelacz_widocznosc(idx))
+            btn_vis = ctk.CTkButton(ramka, text=ikona, width=30, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333", command=lambda idx=i: self.przelacz_widocznosc(idx))
             btn_vis.pack(side="left", padx=5, pady=5)
             
-            btn_name = ctk.CTkButton(ramka, text=w['nazwa'], fg_color="transparent", anchor="w", command=lambda idx=i: self.ustaw_aktywna_warstwe(idx))
+            btn_name = ctk.CTkButton(ramka, text=w['nazwa'], fg_color="transparent", border_width=bw, border_color="white", text_color="white", hover_color="#333", anchor="w", command=lambda idx=i: self.ustaw_aktywna_warstwe(idx))
             btn_name.pack(side="left", fill="x", expand=True, padx=5, pady=5)
             
-            btn_rename = ctk.CTkButton(ramka, text="✏️", width=25, fg_color="transparent", hover_color="#555", command=lambda idx=i: self.zmien_nazwe_warstwy(idx))
+            btn_rename = ctk.CTkButton(ramka, text="✎", width=25, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333", command=lambda idx=i: self.zmien_nazwe_warstwy(idx))
             btn_rename.pack(side="right", padx=2, pady=5)
 
     def komponuj_i_wyswietl(self):
@@ -680,9 +680,6 @@ class PyGraph(ctk.CTk):
         
         self.aktualizuj_wymiary_w_polach(w=self.doc_size[0], h=self.doc_size[1])
 
-
-
-
     def zatwierdz_podglad(self):
         if self.warstwa_podgladowa is not None and self.aktywna_warstwa != -1:
             self.zapisz_stan_do_historii()
@@ -709,7 +706,7 @@ class PyGraph(ctk.CTk):
                 'obraz': w['obraz'].copy()
             })
         self.historia.append((self.doc_size, self.aktywna_warstwa, kopia_warstw))
-        self.btn_cofnij.configure(state="normal", fg_color="transparent", border_width=1, text_color="white", border_color="#1f538d")
+        self.btn_cofnij.configure(state="normal", fg_color="transparent", border_width=1, border_color="white", text_color="white")
 
     def cofnij(self):
         self.warstwa_podgladowa = None
@@ -723,7 +720,7 @@ class PyGraph(ctk.CTk):
             self.doc_size, self.aktywna_warstwa, warstwy = stan
             self.warstwy = warstwy
             if not self.historia: 
-                self.btn_cofnij.configure(state="disabled", fg_color="transparent", border_width=1, border_color="#555", text_color="gray80")
+                self.btn_cofnij.configure(state="disabled", fg_color="transparent", border_width=1, border_color="white", text_color="gray50")
             self.resetuj_suwaki()
             if self.aktywne_narzedzie: self.ustaw_narzedzie(self.aktywne_narzedzie)
             self.odswiez_panel_warstw()
@@ -772,9 +769,6 @@ class PyGraph(ctk.CTk):
         if hasattr(self, 'slider_sharpness'): self.slider_sharpness.set(1.0)
         if hasattr(self, 'slider_scale'): self.slider_scale.set(1.0)
         self.blokuj_podglad = False
-
-
-
 
     def nałoż_filtr(self, filter_type):
         if self.aktywna_warstwa == -1: return
@@ -879,9 +873,6 @@ class PyGraph(ctk.CTk):
             self.komponuj_i_wyswietl()
         except ValueError as e:
             messagebox.showerror(self.t["err_val"], f"{self.t['err_val']} {e}")
-
-
-
 
     def canvas_to_image_coords(self, c_x, c_y):
         if not self.doc_size: return 0, 0
@@ -1009,9 +1000,6 @@ class PyGraph(ctk.CTk):
         r, k = 5, '#00ff00'
         for px, py in [(x1,y1), (x2,y1), (x1,y2), (x2,y2)]: self.canvas.create_oval(px-r, py-r, px+r, py+r, fill=k, tags="crop_element")
 
-
-
-
     def ustaw_narzedzie(self, narzedzie):
         if not self.warstwy: return
         self.zatwierdz_podglad()
@@ -1035,7 +1023,7 @@ class PyGraph(ctk.CTk):
             if self.resize_timer: self.after_cancel(self.resize_timer)
             self.resize_timer = self.after(150, lambda: self.ustaw_narzedzie('crop') if self.aktywne_narzedzie == 'crop' else self.komponuj_i_wyswietl())
 
-    def zapisz_obraz(self):
+    def zapisz_obraz(self, event=None):
         if not self.skompilowany_obraz: return
         sciezka = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg")])
         if sciezka:

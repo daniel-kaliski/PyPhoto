@@ -10,6 +10,18 @@
 # https://opensource.org/license/gpl-3.0
 # ==============================================================================
 
+import sys
+import os
+
+class DummyStream:
+    def write(self, *args, **kwargs): pass
+    def flush(self, *args, **kwargs): pass
+
+if sys.stdout is None:
+    sys.stdout = DummyStream()
+if sys.stderr is None:
+    sys.stderr = DummyStream()
+
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser, simpledialog
@@ -17,8 +29,6 @@ import tkinter.font as tkfont
 from PIL import Image, ImageTk, ImageOps, ImageFilter, ImageEnhance, ImageDraw, ImageFont, ImageChops
 from rembg import remove
 import locale
-import sys
-import os
 
 TEXTS = {
     "pl": {
@@ -263,7 +273,6 @@ class PyGraph(ctk.CTk):
         self.title(self.t["title"])
         self.minsize(1100, 650)
         
-        # Integracja systemowej ikony w locie
         try:
             if sys.platform == "win32":
                 import ctypes
@@ -306,19 +315,19 @@ class PyGraph(ctk.CTk):
         
         self.klucze_filtrow = ["bw", "blur", "sharpen", "invert", "emboss", "edges", "contour", "smooth", "posterize", "solarize"]
 
-        self.grid_columnconfigure(0, weight=0) # Usunięto minsize - panel "oddycha" elastycznie
+        szerokosc_lewego_panelu = 450 if sys.platform == "win32" else 330
+
+        self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1) 
         self.grid_columnconfigure(2, weight=0)
         self.grid_rowconfigure(0, weight=1)
         
         self.panel_lewy = ctk.CTkFrame(self, corner_radius=0)
         self.panel_lewy.grid(row=0, column=0, sticky="nsew")
-        # Usunięto grid_propagate(False) by zapobiec ucinaniu
 
         self.btn_lang = ctk.CTkButton(self.panel_lewy, text="PL" if self.lang == "pl" else "EN", width=60, height=28, corner_radius=6, command=self.przelacz_jezyk, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
         self.btn_lang.pack(anchor="nw", padx=10, pady=10)
 
-        # Dopasowanie szerokości wewnętrznego suwaka na sztywno
         scroll_w = 420 if sys.platform == "win32" else 330
         self.panel_narzedzi = ctk.CTkScrollableFrame(self.panel_lewy, fg_color="transparent", width=scroll_w)
         self.panel_narzedzi.pack(side="top", fill="both", expand=True)

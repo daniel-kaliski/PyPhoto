@@ -1,0 +1,57 @@
+name: Build PyGraph
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+    - name: Pobranie kodu repozytorium
+      uses: actions/checkout@v4
+
+    - name: Konfiguracja środowiska Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' 
+        cache: 'pip'
+
+    - name: Instalacja zależności
+      run: |
+        python -m pip install --upgrade pip
+        pip install customtkinter Pillow rembg pyinstaller
+
+    - name: Kompilacja przez PyInstaller (przy użyciu pliku .spec)
+      run: pyinstaller PyGraph.spec
+
+    - name: Pakowanie aplikacji (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd dist
+        zip -r -y PyGraph-macOS.zip PyGraph.app
+
+    - name: Przesłanie gotowego programu (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: PyGraph-macOS
+        path: dist/PyGraph-macOS.zip
+        retention-days: 7
+
+    - name: Przesłanie gotowego programu (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: PyGraph-Windows
+        path: dist/PyGraph/
+        retention-days: 7

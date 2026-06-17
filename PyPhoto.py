@@ -53,6 +53,8 @@ TEXTS = {
         "none": "Brak",
         "tools": "Narzędzia",
         "open": "Otwórz obraz...",
+        "save": "Eksportuj obraz...",
+        "close": "Zamknij",
         "undo": "Cofnij (Undo)",
         "transform": "Transformacje:",
         "rotate": "Obróć o 90°",
@@ -94,7 +96,6 @@ TEXTS = {
         "crop_on": "Aktywuj ramkę",
         "crop_off": "Wyłącz ramkę",
         "crop_apply": "Kadruj",
-        "save": "Eksportuj obraz...",
         "layers": "WARSTWY",
         "layer_add": "Nowa",
         "layer_insert": "Wstaw",
@@ -133,6 +134,8 @@ TEXTS = {
         "none": "None",
         "tools": "Tools",
         "open": "Open image...",
+        "save": "Export Image...",
+        "close": "Close",
         "undo": "Undo",
         "transform": "Transformations:",
         "rotate": "Rotate 90°",
@@ -174,7 +177,6 @@ TEXTS = {
         "crop_on": "Activate Frame",
         "crop_off": "Deactivate Frame",
         "crop_apply": "Crop",
-        "save": "Export Image...",
         "layers": "LAYERS",
         "layer_add": "Add",
         "layer_insert": "Insert",
@@ -243,6 +245,7 @@ class PyPhoto(ctk.CTk):
 
     def zaladuj_ikony(self):
         self.icons = {}
+        self.tk_icons = {}
         ikony_katalog = self.pobierz_sciezke_zasobu("ikony")
         
         if not os.path.exists(ikony_katalog):
@@ -276,6 +279,67 @@ class PyPhoto(ctk.CTk):
         self.icons["edit"] = load_icon("edit.png")
         self.icons["image"] = load_icon("image.png")
         self.icons["mask"] = load_icon("layers.png")
+
+        try:
+            dpi = self.winfo_fpixels('1i')
+            skala = dpi / 96.0
+            menu_icon_size = int(16 * skala)
+        except Exception:
+            menu_icon_size = 16
+
+        def load_tk_icon(names, size=(menu_icon_size, menu_icon_size)):
+            if isinstance(names, str): names = [names]
+            for name in names:
+                path = os.path.join(ikony_katalog, name)
+                if os.path.exists(path):
+                    try:
+                        img = Image.open(path).convert("RGBA")
+                        img = img.resize(size, Image.Resampling.LANCZOS)
+                        r, g, b, a = img.split()
+                        r = r.point(lambda _: 0)
+                        g = g.point(lambda _: 0)
+                        b = b.point(lambda _: 0)
+                        black_img = Image.merge("RGBA", (r, g, b, a))
+                        return ImageTk.PhotoImage(black_img)
+                    except Exception:
+                        pass
+            return None
+
+        self.tk_icons["open"] = load_tk_icon(["folder_open.png", "folder.png", "open.png"])
+        self.tk_icons["save"] = load_tk_icon(["save.png", "download.png"])
+        self.tk_icons["close"] = load_tk_icon(["close.png", "exit.png", "cancel.png"])
+        
+        self.tk_icons["undo"] = load_tk_icon(["undo.png", "history.png"])
+        
+        self.tk_icons["rotate"] = load_tk_icon(["rotate_right.png", "rotate.png"])
+        self.tk_icons["flip_h"] = load_tk_icon(["flip_h.png", "swap_horiz.png"])
+        self.tk_icons["flip_v"] = load_tk_icon(["flip_v.png", "swap_vert.png"])
+        self.tk_icons["remove_bg"] = load_tk_icon(["auto_fix_high.png", "magic.png", "remove_bg.png"])
+        
+        self.tk_icons["move"] = load_tk_icon(["pan_tool.png", "open_with.png", "move.png"])
+        self.tk_icons["brush"] = load_tk_icon(["brush.png", "create.png"])
+        self.tk_icons["fill"] = load_tk_icon(["format_color_fill.png", "fill.png", "palette.png"])
+        self.tk_icons["text"] = load_tk_icon(["text_fields.png", "title.png", "text.png"])
+        
+        self.tk_icons["shape_rect"] = load_tk_icon(["crop_square.png", "rectangle.png"])
+        self.tk_icons["shape_ellipse"] = load_tk_icon(["radio_button_unchecked.png", "ellipse.png", "circle.png"])
+        self.tk_icons["shape_line"] = load_tk_icon(["remove.png", "line.png"])
+        self.tk_icons["shape_triangle"] = load_tk_icon(["change_history.png", "triangle.png"])
+        self.tk_icons["shape_rounded"] = load_tk_icon(["crop_din.png", "rounded_rect.png"])
+        
+        self.tk_icons["bw"] = load_tk_icon(["filter_b_and_w.png", "bw.png"])
+        self.tk_icons["blur"] = load_tk_icon(["blur_on.png", "blur.png"])
+        self.tk_icons["sharpen"] = load_tk_icon(["details.png", "sharpen.png"])
+        self.tk_icons["invert"] = load_tk_icon(["invert_colors.png", "invert.png"])
+        self.tk_icons["emboss"] = load_tk_icon(["texture.png", "emboss.png"])
+        self.tk_icons["edges"] = load_tk_icon(["polyline.png", "edges.png"])
+        self.tk_icons["contour"] = load_tk_icon(["gesture.png", "contour.png"])
+        self.tk_icons["smooth"] = load_tk_icon(["blur_linear.png", "smooth.png"])
+        self.tk_icons["posterize"] = load_tk_icon(["photo_filter.png", "posterize.png"])
+        self.tk_icons["solarize"] = load_tk_icon(["wb_sunny.png", "solarize.png"])
+        
+        self.tk_icons["lang_pl"] = load_tk_icon(["translate.png", "language.png"])
+        self.tk_icons["lang_en"] = load_tk_icon(["public.png", "language.png"])
 
     def __init__(self):
         super().__init__()
@@ -520,48 +584,57 @@ class PyPhoto(ctk.CTk):
         
         menubar = tk.Menu(self, font=czcionka_menu)
         
+        def add_icon_cmd(menu_parent, label_text, cmd, icon_key=None, state="normal"):
+            kw = {"label": label_text, "command": cmd, "state": state}
+            if icon_key and self.tk_icons.get(icon_key):
+                kw["image"] = self.tk_icons[icon_key]
+                kw["compound"] = "left"
+            menu_parent.add_command(**kw)
+        
         menu_plik = tk.Menu(menubar, font=czcionka_menu)
-        menu_plik.add_command(label=self.t["open"], command=self.otworz_obraz)
-        menu_plik.add_command(label=self.t["save"], command=self.zapisz_obraz)
+        add_icon_cmd(menu_plik, self.t["open"], self.otworz_obraz, "open")
+        add_icon_cmd(menu_plik, self.t["save"], self.zapisz_obraz, "save")
+        menu_plik.add_separator()
+        add_icon_cmd(menu_plik, self.t["close"], self.zamykanie_okna, "close")
         menubar.add_cascade(label=self.t.get("menu_file", "Plik"), menu=menu_plik)
         
         menu_edycja = tk.Menu(menubar, font=czcionka_menu)
         self.menu_edycja = menu_edycja
-        menu_edycja.add_command(label=self.t["undo"], command=self.cofnij, state="disabled" if not self.historia else "normal")
+        add_icon_cmd(menu_edycja, self.t["undo"], self.cofnij, "undo", state="disabled" if not self.historia else "normal")
         menubar.add_cascade(label=self.t.get("menu_edit", "Edycja"), menu=menu_edycja)
         
         menu_obraz = tk.Menu(menubar, font=czcionka_menu)
-        menu_obraz.add_command(label=self.t["rotate"], command=self.obroc_obraz)
-        menu_obraz.add_command(label=self.t["flip_h"], command=self.odbij_w_poziomie)
-        menu_obraz.add_command(label=self.t["flip_v"], command=self.odbij_w_pionie)
+        add_icon_cmd(menu_obraz, self.t["rotate"], self.obroc_obraz, "rotate")
+        add_icon_cmd(menu_obraz, self.t["flip_h"], self.odbij_w_poziomie, "flip_h")
+        add_icon_cmd(menu_obraz, self.t["flip_v"], self.odbij_w_pionie, "flip_v")
         menu_obraz.add_separator()
-        menu_obraz.add_command(label=self.t["remove_bg"], command=self.usun_tlo)
+        add_icon_cmd(menu_obraz, self.t["remove_bg"], self.usun_tlo, "remove_bg")
         menubar.add_cascade(label=self.t.get("menu_image", "Obraz"), menu=menu_obraz)
         
         menu_narzedzia = tk.Menu(menubar, font=czcionka_menu)
-        menu_narzedzia.add_command(label=self.t["move"], command=lambda: self.ustaw_narzedzie('move'))
-        menu_narzedzia.add_command(label=self.t["brush"], command=lambda: self.ustaw_narzedzie('brush'))
-        menu_narzedzia.add_command(label=self.t["fill"], command=lambda: self.ustaw_narzedzie('fill'))
-        menu_narzedzia.add_command(label=self.t["text"], command=lambda: self.ustaw_narzedzie('text'))
+        add_icon_cmd(menu_narzedzia, self.t["move"], lambda: self.ustaw_narzedzie('move'), "move")
+        add_icon_cmd(menu_narzedzia, self.t["brush"], lambda: self.ustaw_narzedzie('brush'), "brush")
+        add_icon_cmd(menu_narzedzia, self.t["fill"], lambda: self.ustaw_narzedzie('fill'), "fill")
+        add_icon_cmd(menu_narzedzia, self.t["text"], lambda: self.ustaw_narzedzie('text'), "text")
         
         menu_ksztalty = tk.Menu(menu_narzedzia, font=czcionka_menu)
-        menu_ksztalty.add_command(label=self.t["shape_rect"], command=lambda: self.wybierz_ksztalt(self.t["shape_rect"]))
-        menu_ksztalty.add_command(label=self.t["shape_ellipse"], command=lambda: self.wybierz_ksztalt(self.t["shape_ellipse"]))
-        menu_ksztalty.add_command(label=self.t["shape_line"], command=lambda: self.wybierz_ksztalt(self.t["shape_line"]))
-        menu_ksztalty.add_command(label=self.t["shape_triangle"], command=lambda: self.wybierz_ksztalt(self.t["shape_triangle"]))
-        menu_ksztalty.add_command(label=self.t["shape_rounded"], command=lambda: self.wybierz_ksztalt(self.t["shape_rounded"]))
+        add_icon_cmd(menu_ksztalty, self.t["shape_rect"], lambda: self.wybierz_ksztalt(self.t["shape_rect"]), "shape_rect")
+        add_icon_cmd(menu_ksztalty, self.t["shape_ellipse"], lambda: self.wybierz_ksztalt(self.t["shape_ellipse"]), "shape_ellipse")
+        add_icon_cmd(menu_ksztalty, self.t["shape_line"], lambda: self.wybierz_ksztalt(self.t["shape_line"]), "shape_line")
+        add_icon_cmd(menu_ksztalty, self.t["shape_triangle"], lambda: self.wybierz_ksztalt(self.t["shape_triangle"]), "shape_triangle")
+        add_icon_cmd(menu_ksztalty, self.t["shape_rounded"], lambda: self.wybierz_ksztalt(self.t["shape_rounded"]), "shape_rounded")
         menu_narzedzia.add_cascade(label=self.t.get("menu_shapes", "Kształty"), menu=menu_ksztalty)
         
         menubar.add_cascade(label=self.t.get("menu_tools", "Narzędzia"), menu=menu_narzedzia)
         
         menu_filtry = tk.Menu(menubar, font=czcionka_menu)
         for key in self.klucze_filtrow:
-            menu_filtry.add_command(label=self.t[key], command=lambda k=key: self.zastosuj_wybrany_filtr(self.t[k]))
+            add_icon_cmd(menu_filtry, self.t[key], lambda k=key: self.zastosuj_wybrany_filtr(self.t[k]), key)
         menubar.add_cascade(label=self.t.get("menu_filters", "Filtry"), menu=menu_filtry)
-        
+
         menu_jezyk = tk.Menu(menubar, font=czcionka_menu)
-        menu_jezyk.add_command(label="Polski", command=lambda: self.ustaw_jezyk("pl"))
-        menu_jezyk.add_command(label="English", command=lambda: self.ustaw_jezyk("en"))
+        add_icon_cmd(menu_jezyk, "Polski", lambda: self.ustaw_jezyk("pl"), "lang_pl")
+        add_icon_cmd(menu_jezyk, "English", lambda: self.ustaw_jezyk("en"), "lang_en")
         menubar.add_cascade(label=self.t.get("menu_language", "Język"), menu=menu_jezyk)
         
         self.config(menu=menubar)
@@ -613,6 +686,9 @@ class PyPhoto(ctk.CTk):
             widget.configure(text=self.t[text_key])
         except Exception:
             pass 
+
+    def przelacz_jezyk(self):
+        self.ustaw_jezyk("en" if self.lang == "pl" else "pl")
 
     def ustaw_jezyk(self, kod):
         if self.lang == kod:

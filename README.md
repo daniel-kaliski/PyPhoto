@@ -42,6 +42,8 @@ Working with PyPhoto is fast and intuitive thanks to built-in shortcuts (they wo
 
 To run the application locally, make sure you have Python installed (version 3.8+).
 
-1. Clone the repository: ```bash pip install customtkinter Pillow rembg
-2. Install the required libraries:
-3. Run the application:
+1. Clone the repository:
+```bash
+   git clone [https://github.com/daniel-kaliski/PyPhoto.git](https://github.com/daniel-kaliski/PyPhoto.git)
+   cd PyPhoto
+

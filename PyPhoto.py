@@ -48,6 +48,7 @@ TEXTS = {
         "menu_tools": "Narzędzia",
         "menu_shapes": "Kształty",
         "menu_filters": "Filtry",
+        "menu_language": "Język",
         "active_tool": "Narzędzie:",
         "none": "Brak",
         "tools": "Narzędzia",
@@ -127,6 +128,7 @@ TEXTS = {
         "menu_tools": "Tools",
         "menu_shapes": "Shapes",
         "menu_filters": "Filters",
+        "menu_language": "Language",
         "active_tool": "Active tool:",
         "none": "None",
         "tools": "Tools",
@@ -337,12 +339,9 @@ class PyPhoto(ctk.CTk):
         self.panel_lewy.grid_propagate(False)
         self.panel_lewy.pack_propagate(False)
 
-        self.btn_lang = ctk.CTkButton(self.panel_lewy, text="PL" if self.lang == "pl" else "EN", width=40, height=28, corner_radius=6, command=self.przelacz_jezyk, fg_color="transparent", border_width=1, border_color="white", text_color="white", hover_color="#333")
-        self.btn_lang.pack(anchor="nw", padx=10, pady=10)
-
         scroll_w = 240
         self.panel_narzedzi = ctk.CTkScrollableFrame(self.panel_lewy, fg_color="transparent", width=scroll_w)
-        self.panel_narzedzi.pack(side="top", fill="both", expand=True)
+        self.panel_narzedzi.pack(side="top", fill="both", expand=True, pady=(10, 0))
         self.uaktywnij_autoukrywanie_paska(self.panel_narzedzi)
         
         self.lbl_aktywne_narz = ctk.CTkLabel(self.panel_narzedzi, text=f"{self.t['active_tool']} {self.t['none']}", font=ctk.CTkFont(size=13, weight="bold"), text_color="#00ff00", wraplength=220)
@@ -560,6 +559,11 @@ class PyPhoto(ctk.CTk):
             menu_filtry.add_command(label=self.t[key], command=lambda k=key: self.zastosuj_wybrany_filtr(self.t[k]))
         menubar.add_cascade(label=self.t.get("menu_filters", "Filtry"), menu=menu_filtry)
         
+        menu_jezyk = tk.Menu(menubar, font=czcionka_menu)
+        menu_jezyk.add_command(label="Polski", command=lambda: self.ustaw_jezyk("pl"))
+        menu_jezyk.add_command(label="English", command=lambda: self.ustaw_jezyk("en"))
+        menubar.add_cascade(label=self.t.get("menu_language", "Język"), menu=menu_jezyk)
+        
         self.config(menu=menubar)
 
     def wybierz_ksztalt(self, ksztalt):
@@ -610,9 +614,12 @@ class PyPhoto(ctk.CTk):
         except Exception:
             pass 
 
-    def przelacz_jezyk(self):
+    def ustaw_jezyk(self, kod):
+        if self.lang == kod:
+            return
+            
         stare_t = self.t
-        self.lang = "en" if self.lang == "pl" else "pl"
+        self.lang = kod
         self.t = TEXTS[self.lang]
         
         for w in self.warstwy:
@@ -622,7 +629,6 @@ class PyPhoto(ctk.CTk):
                 w['nazwa'] = w['nazwa'].replace(stare_t['new_layer'], self.t['new_layer'], 1)
         
         self.title(self.t["title"])
-        self.btn_lang.configure(text="PL" if self.lang == "pl" else "EN")
         
         self._update_text("lbl_aktywne_narz", "active_tool")
         self._update_text("btn_color", "color")

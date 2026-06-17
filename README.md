@@ -66,8 +66,8 @@ Pillow (PIL): The main engine for pixel grid processing, Alpha channel manipulat
 rembg: A machine learning tool for precise background removal.
 
 **Screenshot**
-<img width="1000" height="507" alt="2" src="https://github.com/user-attachments/assets/22663498-ac0e-4558-b992-17e066163f95" />
 <img width="1000" height="505" alt="1" src="https://github.com/user-attachments/assets/d6bcf3a8-f4e1-44fd-955b-e446a7d6ff71" />
+<img width="1000" height="507" alt="2" src="https://github.com/user-attachments/assets/22663498-ac0e-4558-b992-17e066163f95" />
 
 
 **License**

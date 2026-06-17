@@ -1,70 +1,69 @@
-# PyGraph - Edytor Graficzny w Pythonie 
+# PyPhoto - Image Editor in Python
 
-PyGraph to nowoczesna, wielowarstwowa aplikacja desktopowa do edycji grafiki, napisana w Pythonie. Wykorzystuje bibliotekę `customtkinter` do renderowania nowoczesnego interfejsu (Dark Mode) oraz zaawansowane możliwości bibliotek `Pillow` i `rembg` do obróbki obrazu i sztucznej inteligencji.
+PyPhoto is a modern, multi-layer desktop application for image editing, written in Python. It uses the `customtkinter` library to render a modern interface (Dark Mode) and the advanced capabilities of the `Pillow` and `rembg` libraries for image processing and artificial intelligence.
 
-Aplikacja oferuje funkcjonalności znane z profesjonalnych programów graficznych, takie jak obsługa warstw, skróty klawiaturowe czy inteligentne usuwanie tła.
+The application offers features known from professional graphic programs, such as layer support, keyboard shortcuts, and intelligent background removal.
 
-## Główne funkcje
+## Main Features
 
-* **Wielowarstwowy silnik (Layers System):** * Dodawanie pustych warstw oraz wstawianie obrazów z dysku jako nowe warstwy.
-  * Zmiana kolejności, ukrywanie (widoczność), usuwanie oraz edycja nazw warstw.
-  * Suwak przezroczystości (Opacity) dla każdej warstwy niezależnie.
-* **Usuwanie tła AI:** Zintegrowany model AI (`rembg`) pozwalający na wycięcie tła z dowolnej warstwy jednym kliknięciem.
-* **Narzędzia interaktywne:**
-  * ✋ **Przesuń:** Swobodne pozycjonowanie obrazu na warstwie.
-  * 🖌 **Pędzel:** Rysowanie z regulacją grubości i koloru.
-  * 🔤 **Tekst:** Wstawianie napisów z pełną kontrolą wielkości czcionki.
-  * ⬜ **Prostokąt:** Rysowanie figur geometrycznych.
-* **Dopasowania i Filtry:**
-  * Płynna regulacja w czasie rzeczywistym: Jasność, Kontrast, Nasycenie, Ostrość oraz Skala.
-  * Gotowe filtry: Czarno-biały, Rozmycie (Blur), Wyostrzanie, Negatyw, Płaskorzeźba, Detekcja krawędzi.
-* **Globalne kadrowanie:** Narzędzie do precyzyjnego (myszką lub co do piksela) przycinania całego płótna roboczego.
-* **Historia operacji:** Wbudowany system cofania zmian (Undo), zapamiętujący 8 ostatnich stanów projektu.
-* **Wielojęzyczność:** Aplikacja automatycznie wykrywa język systemu lub pozwala na ręczne przełączenie (Polski / Angielski).
+* **Multi-layer engine (Layers System):** 
+  * Adding empty layers and inserting images from the disk as new layers.
+  * Reordering, hiding (visibility), deleting, and renaming layers.
+  * Opacity slider for each layer independently.
+* **AI Background Removal:** An integrated AI model (`rembg`) that allows you to cut out the background from any layer with a single click.
+* **Interactive Tools:**
+  * ✋ **Move:** Free positioning of the image on the layer.
+  * 🖌 **Brush:** Drawing with adjustable thickness and color.
+  * 🔤 **Text:** Inserting text with full font size control.
+  * ⬜ **Rectangle:** Drawing geometric shapes.
+* **Adjustments and Filters:**
+  * Smooth real-time adjustments: Brightness, Contrast, Saturation, Sharpness, and Scale.
+  * Ready-made filters: Black & White, Blur, Sharpen, Invert, Emboss, Edge Detection.
+* **Global Cropping:** A tool for precise (via mouse or pixel-perfect) cropping of the entire working canvas.
+* **Operation History:** A built-in undo system that remembers the last 8 project states.
+* **Multilingual:** The application automatically detects the system language or allows manual switching (Polish / English).
 
-## Skróty klawiaturowe (wzorowane na standardach branżowych)
+## Keyboard Shortcuts (based on industry standards)
 
-Praca z PyGraph jest szybka i intuicyjna dzięki wbudowanym skrótom (działają z klawiszem `Ctrl` na Windows/Linux oraz `Cmd` na macOS):
+Working with PyPhoto is fast and intuitive thanks to built-in shortcuts (they work with the `Ctrl` key on Windows/Linux and `Cmd` on macOS):
 
-* `Ctrl/Cmd + O` - Otwórz projekt
-* `Ctrl/Cmd + S` - Zapisz / Eksportuj obraz
-* `Ctrl/Cmd + Z` - Cofnij (Undo)
+* `Ctrl/Cmd + O` - Open project
+* `Ctrl/Cmd + S` - Save / Export image
+* `Ctrl/Cmd + Z` - Undo
 
-**Narzędzia (aktywowane jednym klawiszem):**
-* `V` - Przesuń (Move)
-* `B` - Pędzel (Brush)
-* `T` - Tekst (Text)
-* `R` - Prostokąt (Rectangle)
-* `C` - Kadrowanie (Crop)
+**Tools (single key activation):**
+* `V` - Move
+* `B` - Brush
+* `T` - Text
+* `R` - Rectangle
+* `C` - Crop
 
-## Wymagania i instalacja
+## Requirements and Installation
 
-Aby uruchomić aplikację lokalnie, upewnij się, że masz zainstalowanego Pythona (wersja 3.8+). 
+To run the application locally, make sure you have Python installed (version 3.8+).
 
-1. Sklonuj repozytorium:
-   ```bash
-   git clone https://github.com/daniel-kaliski/PyGraph.git
-   cd PyGraph
-2. Zainstaluj wymagane biblioteki:
-   ```bash
+1. Clone the repository:
+```bash
+   git clone https://github.com/daniel-kaliski/PyPhoto.git
+   cd PyPhoto
+2.Install the required libraries:
+```bash
    pip install customtkinter Pillow rembg
-3. Uruchom aplikację:
-   ```bash
-   python PyGraph.py
+3. Run the application:
+```bash
+   python PyPhoto.py
 
-## Użyte technologie
+**Technologies Used**
 
-CustomTkinter: Nowoczesny, wspierający motywy interfejs graficzny.
+CustomTkinter: A modern, theme-supporting graphical user interface.
 
-Pillow (PIL): Główny silnik przetwarzania siatki pikseli, manipulacji kanałem Alpha i kompozycji obrazu.
+Pillow (PIL): The main engine for pixel grid processing, Alpha channel manipulation, and image composition.
 
-rembg: Narzędzie uczenia maszynowego do precyzyjnego usuwania tła.
+rembg: A machine learning tool for precise background removal.
 
-## Zrzut ekranu
-<img width="1512" height="1040" alt="Zrzut ekranu 2026-06-14 o 17 47 35" src="https://github.com/user-attachments/assets/30b1ac59-28a3-4f78-90c0-2494a252d709" />
+**Screenshot**
 
+**License**
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0). Detailed information can be found in the LICENSE file or at opensource.org/license/gpl-3.0.
 
-## Licencja
-Ten projekt jest udostępniany na licencji GNU General Public License v3.0 (GPL-3.0). Szczegółowe informacje znajdują się w pliku LICENSE lub na stronie opensource.org/license/gpl-3.0.
-
-Autor: Daniel Kaliski
+Author: Daniel Kaliski

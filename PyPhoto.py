@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ==============================================================================
-# Nazwa pliku: PyGraph.py
+# Nazwa pliku: PyPhoto.py
 # 
 # Copyright (c) 2026 Daniel Kaliski
 # Ten kod jest objęty licencją GNU GENERAL PUBLIC LICENSE GPL-3.0.
@@ -10,15 +10,9 @@
 # https://opensource.org/license/gpl-3.0
 # ==============================================================================
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import filedialog, messagebox, colorchooser, simpledialog
-import tkinter.font as tkfont
-from PIL import Image, ImageTk, ImageOps, ImageFilter, ImageEnhance, ImageDraw, ImageFont, ImageChops
-from rembg import remove
-import locale
 import sys
 import os
+
 class DummyStream:
     def write(self, *args, **kwargs): pass
     def flush(self, *args, **kwargs): pass
@@ -27,6 +21,14 @@ if sys.stdout is None:
     sys.stdout = DummyStream()
 if sys.stderr is None:
     sys.stderr = DummyStream()
+
+import customtkinter as ctk
+import tkinter as tk
+from tkinter import filedialog, messagebox, colorchooser, simpledialog
+import tkinter.font as tkfont
+from PIL import Image, ImageTk, ImageOps, ImageFilter, ImageEnhance, ImageDraw, ImageFont, ImageChops
+from rembg import remove
+import locale
 
 TEXTS = {
     "pl": {
@@ -423,8 +425,6 @@ class PyPhoto(ctk.CTk):
                 suwak = ctk.CTkSlider(ramka_suwaka, from_=0.0, to=3.0, command=self.podglad_suwakow)
             suwak.set(1.0)
             suwak.pack(side="right", expand=True, fill="x")
-            
-            suwak.bind("<ButtonRelease-1>", lambda e: self.zatwierdz_podglad())
             
             setattr(self, attr, suwak)
             setattr(self, f"lbl_{nazwa}", lbl)

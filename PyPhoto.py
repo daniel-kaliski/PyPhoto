@@ -78,6 +78,7 @@ TEXTS = {
         "shape_rounded": "Zaokr. Prostokąt",
         "color": "Wybierz kolor",
         "size": "Grubość:",
+        "select_font": "Wybierz czcionkę:",
         "font_size": "Wielkość:",
         "effects": "Filtry (na warstwie):",
         "effects_placeholder": "Wybierz filtr...",
@@ -93,9 +94,9 @@ TEXTS = {
         "solarize": "Solaryzacja",
         "remove_bg": "Usuń tło (AI)",
         "crop": "Kadrowanie:",
-        "crop_on": "Aktywuj ramkę",
-        "crop_off": "Wyłącz ramkę",
-        "crop_apply": "Kadruj",
+        "crop_on": "Kadruj",
+        "crop_off": "Anuluj kadrowanie",
+        "crop_apply": "Zastosuj",
         "layers": "WARSTWY",
         "layer_add": "Nowa",
         "layer_insert": "Wstaw",
@@ -159,6 +160,7 @@ TEXTS = {
         "shape_rounded": "Rounded Rect",
         "color": "Select Color",
         "size": "Thickness:",
+        "select_font": "Select font:",
         "font_size": "Size:",
         "effects": "Filters:",
         "effects_placeholder": "Select filter...",
@@ -174,9 +176,9 @@ TEXTS = {
         "solarize": "Solarize",
         "remove_bg": "Remove BG (AI)",
         "crop": "Cropping:",
-        "crop_on": "Activate Frame",
-        "crop_off": "Deactivate Frame",
-        "crop_apply": "Crop",
+        "crop_on": "Crop",
+        "crop_off": "Cancel Crop",
+        "crop_apply": "Apply",
         "layers": "LAYERS",
         "layer_add": "Add",
         "layer_insert": "Insert",
@@ -427,6 +429,10 @@ class PyPhoto(ctk.CTk):
         
         ramka_czcionka_rodzina = ctk.CTkFrame(ramka_opcji, fg_color="transparent")
         ramka_czcionka_rodzina.pack(fill="x", pady=5)
+        
+        self.lbl_select_font = ctk.CTkLabel(ramka_czcionka_rodzina, text=self.t["select_font"], anchor="w", font=ctk.CTkFont(size=12))
+        self.lbl_select_font.pack(anchor="w", pady=(0, 2))
+        
         czcionki_systemowe = sorted([f for f in tkfont.families() if not f.startswith('@')])
         if not czcionki_systemowe: czcionki_systemowe = ["Arial"]
         self.combo_font = ctk.CTkComboBox(ramka_czcionka_rodzina, values=czcionki_systemowe, state="readonly", command=self.zmien_czcionke_tekstu, fg_color="#242424", border_color="gray50", text_color="white")
@@ -572,6 +578,14 @@ class PyPhoto(ctk.CTk):
         ramka_skrolowana._parent_frame.bind("<Configure>", sprawdz_pasek, add="+")
         self.after(100, sprawdz_pasek)
 
+    def odswiez_pola_kadrowania(self):
+        if not self.rect_coords or not self.doc_size: return
+        rx1, ry1 = self.canvas_to_image_coords(min(self.rect_coords[0], self.rect_coords[2]), min(self.rect_coords[1], self.rect_coords[3]))
+        rx2, ry2 = self.canvas_to_image_coords(max(self.rect_coords[0], self.rect_coords[2]), max(self.rect_coords[1], self.rect_coords[3]))
+        cx1, cy1 = max(0, rx1), max(0, ry1)
+        cx2, cy2 = min(self.doc_size[0], rx2), min(self.doc_size[1], ry2)
+        self.aktualizuj_wymiary_w_polach(cx1, cy1, max(0, cx2 - cx1), max(0, cy2 - cy1))
+
     def utworz_menu(self):
         if sys.platform == "win32":
             domyslna_czcionka_menu = tkfont.nametofont("TkMenuFont")
@@ -709,6 +723,7 @@ class PyPhoto(ctk.CTk):
         self._update_text("lbl_aktywne_narz", "active_tool")
         self._update_text("btn_color", "color")
         self._update_text("lbl_size", "size")
+        self._update_text("lbl_select_font", "select_font")
         self._update_text("lbl_font_size", "font_size")
         self._update_text("lbl_adjust", "adjust")
         self._update_text("lbl_brightness", "brightness")
@@ -1246,31 +1261,21 @@ class PyPhoto(ctk.CTk):
             self.config(cursor="")
 
     def wykonaj_kadrowanie(self):
-        if not self.warstwy: return
+        if not self.warstwy or not self.doc_size: return
         try:
             self.zatwierdz_podglad()
-            if self.rect_coords and self.aktywne_narzedzie == 'crop':
-                x1, y1, x2, y2 = self.rect_coords
-                rx1, ry1 = self.canvas_to_image_coords(min(x1, x2), min(y1, y2))
-                rx2, ry2 = self.canvas_to_image_coords(max(x1, x2), max(y1, y2))
-                
-                cx1, cy1 = max(0, rx1), max(0, ry1)
-                cx2, cy2 = min(self.doc_size[0], rx2), min(self.doc_size[1], ry2)
-                
-                w_new, h_new = cx2 - cx1, cy2 - cy1
-                if w_new <= 0 or h_new <= 0: return
-                offset_x_change, offset_y_change = cx1, cy1
-            else:
-                x, y = int(self.entry_x.get()), int(self.entry_y.get())
-                w, h = int(self.entry_w.get()), int(self.entry_h.get())
-                img_w, img_h = self.doc_size
+            
+            x = int(self.entry_x.get())
+            y = int(self.entry_y.get())
+            w = int(self.entry_w.get())
+            h = int(self.entry_h.get())
+            img_w, img_h = self.doc_size
 
-                if w <= 0 or h <= 0: raise ValueError(self.t["err_dim"])
-                x, y = max(0, x), max(0, y)
-                w, h = min(w, img_w - x), min(h, img_h - y)
-                
-                w_new, h_new = w, h
-                offset_x_change, offset_y_change = x, y
+            if w <= 0 or h <= 0: raise ValueError(self.t["err_dim"])
+            x, y = max(0, x), max(0, y)
+            w, h = min(w, img_w - x), min(h, img_h - y)
+            
+            offset_x_change, offset_y_change = x, y
 
             self.zapisz_stan_do_historii()
             
@@ -1278,7 +1283,7 @@ class PyPhoto(ctk.CTk):
                 warstwa['offset_x'] -= offset_x_change
                 warstwa['offset_y'] -= offset_y_change
                 
-            self.doc_size = (w_new, h_new)
+            self.doc_size = (w, h)
             
             self.ustaw_narzedzie(None)
             self.komponuj_i_wyswietl()
@@ -1602,11 +1607,16 @@ class PyPhoto(ctk.CTk):
                 elif abs(x - xx) < t and abs(y - ym) < t: self.akcja_myszy = 'resize_tr'
                 elif abs(x - xm) < t and abs(y - yx) < t: self.akcja_myszy = 'resize_bl'
                 elif abs(x - xx) < t and abs(y - yx) < t: self.akcja_myszy = 'resize_br'
+                elif abs(y - ym) < t and xm < x < xx: self.akcja_myszy = 'resize_t'
+                elif abs(y - yx) < t and xm < x < xx: self.akcja_myszy = 'resize_b'
+                elif abs(x - xm) < t and ym < y < yx: self.akcja_myszy = 'resize_l'
+                elif abs(x - xx) < t and ym < y < yx: self.akcja_myszy = 'resize_r'
                 elif xm < x < xx and ym < y < yx: self.akcja_myszy = 'move'
                 else: 
                     self.akcja_myszy = 'draw'
                     self.rect_coords = [x, y, x, y]
             self.rysuj_ramke_na_plotnie()
+            self.odswiez_pola_kadrowania()
         elif self.aktywne_narzedzie == 'brush': 
             self.draw_points = [(x, y)]
         elif self.aktywne_narzedzie == 'fill':
@@ -1662,9 +1672,19 @@ class PyPhoto(ctk.CTk):
                 self.rect_coords[0], self.rect_coords[3] = x, y
             elif self.akcja_myszy == 'resize_br': 
                 self.rect_coords[2], self.rect_coords[3] = x, y
+            elif self.akcja_myszy == 'resize_t':
+                self.rect_coords[1] = y
+            elif self.akcja_myszy == 'resize_b':
+                self.rect_coords[3] = y
+            elif self.akcja_myszy == 'resize_l':
+                self.rect_coords[0] = x
+            elif self.akcja_myszy == 'resize_r':
+                self.rect_coords[2] = x
             
             self.last_x, self.last_y = x, y
             self.rysuj_ramke_na_plotnie()
+            self.odswiez_pola_kadrowania()
+            
         elif self.aktywne_narzedzie == 'brush':
             self.canvas.create_line(self.last_x, self.last_y, x, y, fill=self.get_draw_color(), width=self.slider_size.get(), capstyle=tk.ROUND, smooth=True)
             self.draw_points.append((x, y))
@@ -1685,10 +1705,37 @@ class PyPhoto(ctk.CTk):
         self.canvas.delete("crop_element")
         if not self.rect_coords: return
         x1, y1, x2, y2 = self.rect_coords
-        self.canvas.create_rectangle(x1, y1, x2, y2, outline='#00ff00', width=2, dash=(5,5), tags="crop_element")
-        r, k = 6, '#00ff00'
-        for px, py in [(x1,y1), (x2,y1), (x1,y2), (x2,y2)]: 
-            self.canvas.create_oval(px-r, py-r, px+r, py+r, fill=k, tags="crop_element")
+        xm, xx = min(x1, x2), max(x1, x2)
+        ym, yx = min(y1, y2), max(y1, y2)
+
+        w = xx - xm
+        h = yx - ym
+
+        self.canvas.create_rectangle(xm-1, ym-1, xx+1, yx+1, outline='black', width=1, tags="crop_element")
+        self.canvas.create_rectangle(xm, ym, xx, yx, outline='white', width=1, tags="crop_element")
+        
+        if w > 30 and h > 30:
+            for i in [1, 2]:
+                vx = xm + (w * i / 3)
+                self.canvas.create_line(vx, ym, vx, yx, fill='white', width=1, dash=(4, 4), tags="crop_element")
+                hy = ym + (h * i / 3)
+                self.canvas.create_line(xm, hy, xx, hy, fill='white', width=1, dash=(4, 4), tags="crop_element")
+
+        l = 20
+        c = 'white'
+        tw = 3
+        
+        self.canvas.create_line(xm, ym+l, xm, ym, xm+l, ym, fill=c, width=tw, tags="crop_element")
+        self.canvas.create_line(xx-l, ym, xx, ym, xx, ym+l, fill=c, width=tw, tags="crop_element")
+        self.canvas.create_line(xm, yx-l, xm, yx, xm+l, yx, fill=c, width=tw, tags="crop_element")
+        self.canvas.create_line(xx-l, yx, xx, yx, xx, yx-l, fill=c, width=tw, tags="crop_element")
+
+        mid_x = xm + w/2
+        mid_y = ym + h/2
+        self.canvas.create_line(mid_x-l/2, ym, mid_x+l/2, ym, fill=c, width=tw, tags="crop_element") 
+        self.canvas.create_line(mid_x-l/2, yx, mid_x+l/2, yx, fill=c, width=tw, tags="crop_element") 
+        self.canvas.create_line(xm, mid_y-l/2, xm, mid_y+l/2, fill=c, width=tw, tags="crop_element") 
+        self.canvas.create_line(xx, mid_y-l/2, xx, mid_y+l/2, fill=c, width=tw, tags="crop_element") 
 
     def ustaw_narzedzie(self, narzedzie):
         if not self.warstwy and narzedzie not in [None, 'crop']: return
@@ -1698,9 +1745,21 @@ class PyPhoto(ctk.CTk):
         if self.aktywne_narzedzie == narzedzie:
             self.aktywne_narzedzie = None
             nazwa = self.t["none"]
+            if self.doc_size:
+                self.aktualizuj_wymiary_w_polach(0, 0, self.doc_size[0], self.doc_size[1])
         else:
             self.aktywne_narzedzie = narzedzie
-            if narzedzie == 'crop': self.canvas.config(cursor="cross"); nazwa = self.t["crop_on"]
+            if narzedzie == 'crop': 
+                self.canvas.config(cursor="cross")
+                nazwa = self.t["crop_on"]
+                if self.doc_size and hasattr(self, 'display_width'):
+                    x1 = self.canvas_img_x_offset
+                    y1 = self.canvas_img_y_offset
+                    x2 = self.canvas_img_x_offset + self.display_width
+                    y2 = self.canvas_img_y_offset + self.display_height
+                    self.rect_coords = [x1, y1, x2, y2]
+                    self.rysuj_ramke_na_plotnie()
+                    self.odswiez_pola_kadrowania()
             elif narzedzie == 'brush': self.canvas.config(cursor="pencil"); nazwa = self.t["brush"]
             elif narzedzie == 'fill': self.canvas.config(cursor="tcross"); nazwa = self.t["fill"]
             elif narzedzie == 'text': self.canvas.config(cursor="xterm"); nazwa = self.t["text"]

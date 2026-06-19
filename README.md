@@ -67,9 +67,9 @@ To run the application locally, make sure you have Python installed (version 3.8
 
 **Screenshot**
 
-<img width="750" height="379" alt="1" src="https://github.com/user-attachments/assets/4470ff01-0af5-43bf-9cbc-f425f1e9af6d" />
+<img width="1500" height="757" alt="1" src="https://github.com/user-attachments/assets/6b0635c7-50f7-423e-bf92-4fe43856f0df" />
 
-<img width="750" height="379" alt="2" src="https://github.com/user-attachments/assets/2fc4b569-9b6c-4bc1-88a9-24c3684960c9" />
+<img width="1500" height="757" alt="2" src="https://github.com/user-attachments/assets/d9223a8c-28df-452d-a641-5bc9f81990f4" />
 
 **License**
 

@@ -25,7 +25,7 @@ try:
     if sys.platform == "win32":
         import ctypes
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
-        myappid = 'com.danielkaliski.pyphoto.1.0'
+        myappid = 'com.danielkaliski.pyphoto'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except Exception:
     pass
@@ -40,7 +40,7 @@ import locale
 
 TEXTS = {
     "pl": {
-        "title": "PyPhoto - Image Editor",
+        "title": "PyPhoto - Image Editor 1.0.0",
         "menu_file": "Plik",
         "menu_edit": "Edycja",
         "menu_image": "Obraz",
@@ -124,7 +124,7 @@ TEXTS = {
         "msg_err_title": "Błąd"
     },
     "en": {
-        "title": "PyPhoto - Image Editor",
+        "title": "PyPhoto - Image Editor 1.0.0",
         "menu_file": "File",
         "menu_edit": "Edit",
         "menu_image": "Image",
@@ -352,7 +352,7 @@ class PyPhoto(ctk.CTk):
         self.t = TEXTS[self.lang]
         
         self.zaladuj_ikony()
-
+        self.title(self.t["title"])
         self.minsize(1100, 650)
         
         try:
@@ -577,7 +577,6 @@ class PyPhoto(ctk.CTk):
 
         self.przypisz_skroty()
         self.utworz_menu()
-        self.bind("<Configure>", self.wycentruj_tytul_okna)
 
     def przypisz_skroty(self):
         def sprawdz_focus_i_wykonaj(akcja, arg=None):
@@ -801,7 +800,7 @@ class PyPhoto(ctk.CTk):
                 w['nazwa'] = self.t['brush']
             elif w['nazwa'].startswith(stare_t['new_layer'] + " "):
                 w['nazwa'] = w['nazwa'].replace(stare_t['new_layer'], self.t['new_layer'], 1)
-        
+        self.title(self.t["title"])
         elementy = [
             ("lbl_aktywne_narz", "active_tool"), ("btn_color_outline", "color_outline"),
             ("btn_color_fill", "color_fill"), ("lbl_size", "size"), ("lbl_select_font", "select_font"),
@@ -2158,21 +2157,6 @@ class PyPhoto(ctk.CTk):
             except Exception as e:
                 messagebox.showerror(self.t["msg_err_title"], f"{self.t['err_save']} {e}")
     
-    def wycentruj_tytul_okna(self, event=None):
-        if event and event.widget != self: 
-            return
-            
-        szerokosc = self.winfo_width()
-        if not hasattr(self, 'ost_szer_okna'): 
-            self.ost_szer_okna = 0
-            
-        if abs(szerokosc - self.ost_szer_okna) > 15:
-            self.ost_szer_okna = szerokosc
-            nazwa = "PyPhoto - Image Editor"
-            
-            ile_spacji = max(0, int((szerokosc / 2 - len(nazwa) * 3.5) / 4))
-            
-            self.wm_title(" " * ile_spacji + nazwa)
             
 if __name__ == "__main__":
     aplikacja = PyPhoto()

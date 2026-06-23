@@ -71,6 +71,8 @@ TEXTS = {
         "flip_h": "Odbij w poziomie",
         "flip_v": "Odbij w pionie",
         "adjust": "Dopasowanie:",
+        "exposure": "Ekspozycja",
+        "white_balance": "Temperatura",
         "brightness": "Jasność",
         "contrast": "Kontrast",
         "saturation": "Nasycenie",
@@ -166,6 +168,8 @@ TEXTS = {
         "flip_h": "Flip Horizontally",
         "flip_v": "Flip Vertically",
         "adjust": "Layer Adjustments:",
+        "exposure": "Exposure",
+        "white_balance": "Temperature",
         "brightness": "Brightness",
         "contrast": "Contrast",
         "saturation": "Saturation",
@@ -504,18 +508,24 @@ class PyPhoto(ctk.CTk):
         self.lbl_adjust = ctk.CTkLabel(self.panel_narzedzi, text=self.t["adjust"], font=ctk.CTkFont(size=14, weight="bold"))
         self.lbl_adjust.pack(pady=(0, 10))
 
-        for nazwa, attr in [("brightness", "slider_brightness"), ("contrast", "slider_contrast"), ("saturation", "slider_saturation"), ("sharpness", "slider_sharpness"), ("scale", "slider_scale")]:
+        suwaki_konfig = [
+            ("exposure", "slider_exposure", -3.0, 3.0, 0.0),
+            ("brightness", "slider_brightness", 0.1, 2.0, 1.0),
+            ("contrast", "slider_contrast", 0.1, 2.0, 1.0),
+            ("saturation", "slider_saturation", 0.0, 3.0, 1.0),
+            ("white_balance", "slider_white_balance", -100, 100, 0.0),
+            ("sharpness", "slider_sharpness", 0.0, 3.0, 1.0),
+            ("scale", "slider_scale", 0.1, 3.0, 1.0)
+        ]
+
+        for nazwa, attr, min_v, max_v, domyslna in suwaki_konfig:
             ramka_suwaka = ctk.CTkFrame(self.panel_narzedzi, fg_color="transparent")
             ramka_suwaka.pack(fill="x", padx=5, pady=2)
             lbl = ctk.CTkLabel(ramka_suwaka, text=self.t[nazwa], width=80, anchor="w", font=ctk.CTkFont(size=13))
             lbl.pack(side="left", padx=(0, 5))
-            if nazwa in ["brightness", "contrast"]:
-                suwak = ctk.CTkSlider(ramka_suwaka, from_=0.1, to=2.0, command=self.podglad_suwakow)
-            elif nazwa == "scale":
-                suwak = ctk.CTkSlider(ramka_suwaka, from_=0.1, to=3.0, command=self.podglad_suwakow)
-            else:
-                suwak = ctk.CTkSlider(ramka_suwaka, from_=0.0, to=3.0, command=self.podglad_suwakow)
-            suwak.set(1.0)
+            
+            suwak = ctk.CTkSlider(ramka_suwaka, from_=min_v, to=max_v, command=self.podglad_suwakow)
+            suwak.set(domyslna)
             suwak.pack(side="right", expand=True, fill="x")
             
             setattr(self, attr, suwak)
@@ -934,7 +944,8 @@ class PyPhoto(ctk.CTk):
             ("btn_color_fill", "color_fill"), ("lbl_size", "size"), ("lbl_select_font", "select_font"),
             ("lbl_font_size", "font_size"), ("lbl_adjust", "adjust"), ("lbl_brightness", "brightness"),
             ("lbl_contrast", "contrast"), ("lbl_saturation", "saturation"), ("lbl_sharpness", "sharpness"),
-            ("lbl_scale", "scale"), ("lbl_kadrowanie", "crop"), ("lbl_w", "width"), ("lbl_h", "height"),
+            ("lbl_scale", "scale"), ("lbl_exposure", "exposure"), ("lbl_white_balance", "white_balance"),
+            ("lbl_kadrowanie", "crop"), ("lbl_w", "width"), ("lbl_h", "height"),
             ("btn_dokladne_crop", "crop_apply"), ("lbl_layers_title", "layers"), ("btn_add_layer", "layer_add"),
             ("btn_insert_layer", "layer_insert"), ("btn_del_layer", "layer_del"), ("btn_add_mask", "mask_add"),
             ("btn_del_mask", "mask_del"), ("lbl_blend", "blend"), ("lbl_opacity", "opacity"), ("text_label", "help")
@@ -1704,22 +1715,31 @@ class PyPhoto(ctk.CTk):
             self.zapisz_stan_do_historii()
             w = self.warstwy[self.aktywna_warstwa]
             
-            # Pobieramy stany suwaków
             sc = getattr(self, 'slider_scale', None)
             sc_val = sc.get() if sc else 1.0
+            
             b = getattr(self, 'slider_brightness', None)
             b_val = b.get() if b else 1.0
+            
             c = getattr(self, 'slider_contrast', None)
             c_val = c.get() if c else 1.0
+            
             s = getattr(self, 'slider_saturation', None)
             s_val = s.get() if s else 1.0
+            
             sh = getattr(self, 'slider_sharpness', None)
             sh_val = sh.get() if sh else 1.0
             
-            is_only_scale = (b_val == 1.0 and c_val == 1.0 and s_val == 1.0 and sh_val == 1.0 and sc_val != 1.0)
+            exp = getattr(self, 'slider_exposure', None)
+            exp_val = exp.get() if exp else 0.0
+            
+            wb = getattr(self, 'slider_white_balance', None)
+            wb_val = wb.get() if wb else 0.0
+            
+            # Skalujemy wektor matematycznie tylko wtedy, gdy żaden filtr barwny nie był dotykany
+            is_only_scale = (b_val == 1.0 and c_val == 1.0 and s_val == 1.0 and sh_val == 1.0 and exp_val == 0.0 and wb_val == 0.0 and sc_val != 1.0)
             
             if is_only_scale and (w.get('is_object') or w.get('is_text')):
-                
                 if w.get('is_text'):
                     w['text_x'] = int(w['text_x'] * sc_val)
                     w['text_y'] = int(w['text_y'] * sc_val)
@@ -1746,6 +1766,8 @@ class PyPhoto(ctk.CTk):
             if hasattr(self, 'slider_saturation'): self.slider_saturation.set(1.0)
             if hasattr(self, 'slider_sharpness'): self.slider_sharpness.set(1.0)
             if hasattr(self, 'slider_scale'): self.slider_scale.set(1.0)
+            if hasattr(self, 'slider_exposure'): self.slider_exposure.set(0.0)
+            if hasattr(self, 'slider_white_balance'): self.slider_white_balance.set(0.0)
             self.blokuj_podglad = False
             self.komponuj_i_wyswietl()
 
@@ -1822,16 +1844,38 @@ class PyPhoto(ctk.CTk):
         if self.warstwy[self.aktywna_warstwa].get('edycja_maski'): return 
 
         img = self.warstwy[self.aktywna_warstwa]['obraz'].copy()
-        b, c = self.slider_brightness.get(), self.slider_contrast.get()
-        s, sh = self.slider_saturation.get(), self.slider_sharpness.get()
+        
+        # Pobieranie wartości suwaków
+        e_w = getattr(self, 'slider_exposure', None)
+        exp = e_w.get() if e_w else 0.0
+        
+        wb = getattr(self, 'slider_white_balance', None)
+        temp = wb.get() if wb else 0.0
+        
+        b = self.slider_brightness.get() if hasattr(self, 'slider_brightness') else 1.0
+        c = self.slider_contrast.get() if hasattr(self, 'slider_contrast') else 1.0
+        s = self.slider_saturation.get() if hasattr(self, 'slider_saturation') else 1.0
+        sh = self.slider_sharpness.get() if hasattr(self, 'slider_sharpness') else 1.0
         sc = getattr(self, 'slider_scale', None)
         sc_val = sc.get() if sc else 1.0
 
         rgb = img.convert("RGB")
+        
+        if exp != 0.0:
+            factor = 2.0 ** exp
+            rgb = rgb.point(lambda p: p * factor)
+            
+        if temp != 0.0:
+            r, g, b_chan = rgb.split()
+            r = r.point(lambda i: i + temp)
+            b_chan = b_chan.point(lambda i: i - temp)
+            rgb = Image.merge("RGB", (r, g, b_chan))
+
         if b != 1.0: rgb = ImageEnhance.Brightness(rgb).enhance(b)
         if c != 1.0: rgb = ImageEnhance.Contrast(rgb).enhance(c)
         if s != 1.0: rgb = ImageEnhance.Color(rgb).enhance(s)
         if sh != 1.0: rgb = ImageEnhance.Sharpness(rgb).enhance(sh)
+        
         rgb.putalpha(img.getchannel('A'))
         
         if sc_val != 1.0:
@@ -1851,6 +1895,8 @@ class PyPhoto(ctk.CTk):
         if hasattr(self, 'slider_saturation'): self.slider_saturation.set(1.0)
         if hasattr(self, 'slider_sharpness'): self.slider_sharpness.set(1.0)
         if hasattr(self, 'slider_scale'): self.slider_scale.set(1.0)
+        if hasattr(self, 'slider_exposure'): self.slider_exposure.set(0.0)
+        if hasattr(self, 'slider_white_balance'): self.slider_white_balance.set(0.0)
         self.blokuj_podglad = False
 
     def nałoż_filtr(self, filter_type):

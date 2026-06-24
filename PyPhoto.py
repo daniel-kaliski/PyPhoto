@@ -94,6 +94,8 @@ TEXTS = {
         "color_fill": "Kolor tła",
         "no_fill": "Brak",
         "size": "Grubość:",
+        "roundness": "Zaokrąglenie rogów",
+        "bulge": "Krzywizna boków",
         "select_font": "Wybierz czcionkę:",
         "font_size": "Wielkość:",
         "effects": "Filtry (na warstwie):",
@@ -191,6 +193,8 @@ TEXTS = {
         "color_fill": "Fill Color",
         "no_fill": "None",
         "size": "Thickness:",
+        "roundness": "Corner Radius",
+        "bulge": "Side Curvature",
         "select_font": "Select font:",
         "font_size": "Size:",
         "effects": "Filters:",
@@ -471,34 +475,41 @@ class PyPhoto(ctk.CTk):
         self.btn_color_fill.pack(side="left", expand=True, fill="x", padx=(0, 2))
         
         self.btn_no_fill = ctk.CTkButton(ramka_fill, text="X", width=32, height=32, corner_radius=6, command=self.usun_kolor_tla, fg_color="transparent", border_width=1, border_color="#aa0000", text_color="#aa0000", hover_color="#550000")
-        self.btn_no_fill.pack(side="right")
-        
-        ramka_grubosc = ctk.CTkFrame(ramka_opcji, fg_color="transparent")
-        ramka_grubosc.pack(fill="x", pady=5)
-        self.lbl_size = ctk.CTkLabel(ramka_grubosc, text=self.t["size"], width=80, anchor="w", font=ctk.CTkFont(size=13))
-        self.lbl_size.pack(side="left", padx=(0, 2))
-        self.slider_size = ctk.CTkSlider(ramka_grubosc, from_=1, to=100, button_color="#888", button_hover_color="#bbb", command=self.aktualizuj_grubosc_live)
+        # --- SEKCJA SUWAKÓW KSZTAŁTU I LINII ---
+        self.lbl_size = ctk.CTkLabel(self.panel_narzedzi, text=self.t.get("size", "Grubość:"), anchor="w")
+        self.lbl_size.pack(fill="x", padx=15, pady=(15, 0))
+        self.slider_size = ctk.CTkSlider(self.panel_narzedzi, from_=1, to=100, command=self.aktualizuj_wlasciwosci_obiektu)
         self.slider_size.set(5)
-        self.slider_size.pack(side="right", expand=True, fill="x")
-        self.slider_size.bind("<ButtonRelease-1>", lambda e: self.zapisz_koniec_zmiany_live())
-        
-        ramka_czcionka_rodzina = ctk.CTkFrame(ramka_opcji, fg_color="transparent")
-        ramka_czcionka_rodzina.pack(fill="x", pady=5)
-        
-        self.lbl_select_font = ctk.CTkLabel(ramka_czcionka_rodzina, text=self.t["select_font"], anchor="w", font=ctk.CTkFont(size=12))
-        self.lbl_select_font.pack(anchor="w", pady=(0, 2))
-        
-        czcionki_systemowe = sorted([f for f in tkfont.families() if not f.startswith('@')])
-        if not czcionki_systemowe: czcionki_systemowe = ["Arial"]
-        self.combo_font = ctk.CTkComboBox(ramka_czcionka_rodzina, values=czcionki_systemowe, state="readonly", command=self.zmien_czcionke_tekstu, fg_color="#242424", border_color="gray50", text_color="white")
-        self.combo_font.pack(expand=True, fill="x")
-        self.combo_font.set("Arial" if "Arial" in czcionki_systemowe else czcionki_systemowe[0])
+        self.slider_size.pack(fill="x", padx=10, pady=0)
 
-        ramka_czcionka = ctk.CTkFrame(ramka_opcji, fg_color="transparent")
-        ramka_czcionka.pack(fill="x", pady=5)
-        self.lbl_font_size = ctk.CTkLabel(ramka_czcionka, text=self.t["font_size"], width=80, anchor="w", font=ctk.CTkFont(size=13))
-        self.lbl_font_size.pack(side="left", padx=(0, 2))
-        self.slider_font_size = ctk.CTkSlider(ramka_czcionka, from_=10, to=300, button_color="#888", button_hover_color="#bbb", command=self.zmien_rozmiar_tekstu)
+        self.lbl_roundness = ctk.CTkLabel(self.panel_narzedzi, text=self.t.get("roundness", "Zaokrąglenie rogów:"), anchor="w")
+        self.lbl_roundness.pack(fill="x", padx=15, pady=(5, 0))
+        self.slider_roundness = ctk.CTkSlider(self.panel_narzedzi, from_=0, to=200, command=self.aktualizuj_wlasciwosci_obiektu)
+        self.slider_roundness.set(0)
+        self.slider_roundness.pack(fill="x", padx=10, pady=0)
+
+        self.lbl_bulge = ctk.CTkLabel(self.panel_narzedzi, text=self.t.get("bulge", "Krzywizna boków:"), anchor="w")
+        self.lbl_bulge.pack(fill="x", padx=15, pady=(5, 0))
+        self.slider_bulge = ctk.CTkSlider(self.panel_narzedzi, from_=-100, to=100, command=self.aktualizuj_wlasciwosci_obiektu)
+        self.slider_bulge.set(0)
+        self.slider_bulge.pack(fill="x", padx=10, pady=(0, 10))
+        
+        # --- SEKCJA TEKSTOWA (CZCIONKA I ROZMIAR) ---
+        self.lbl_select_font = ctk.CTkLabel(self.panel_narzedzi, text=self.t.get("select_font", "Wybierz czcionkę:"), anchor="w", font=ctk.CTkFont(size=13, weight="bold"))
+        self.lbl_select_font.pack(fill="x", padx=15, pady=(10, 2))
+        
+        self.czcionka_var = tk.StringVar(value="Arial")
+        czcionki_systemowe = sorted([f for f in tkfont.families() if not f.startswith('@')])
+        if not czcionki_systemowe: czcionki_systemowe = ["Arial", "Courier", "Times New Roman", "Comic Sans MS", "Impact"]
+        
+        self.combo_font = ctk.CTkComboBox(self.panel_narzedzi, variable=self.czcionka_var, values=czcionki_systemowe, command=self.zmien_czcionke_tekstu)
+        self.combo_font.pack(fill="x", padx=10, pady=(0, 5))
+        
+        ramka_czcionka_rozmiar = ctk.CTkFrame(self.panel_narzedzi, fg_color="transparent")
+        ramka_czcionka_rozmiar.pack(fill="x", padx=10, pady=5)
+        self.lbl_font_size = ctk.CTkLabel(ramka_czcionka_rozmiar, text=self.t["font_size"], width=60, anchor="w", font=ctk.CTkFont(size=13))
+        self.lbl_font_size.pack(side="left", padx=(5, 2))
+        self.slider_font_size = ctk.CTkSlider(ramka_czcionka_rozmiar, from_=10, to=300, button_color="#888", button_hover_color="#bbb", command=self.zmien_rozmiar_tekstu)
         self.slider_font_size.set(40)
         self.slider_font_size.pack(side="right", expand=True, fill="x")
         self.slider_font_size.bind("<ButtonRelease-1>", lambda e: self.zatwierdz_rozmiar_tekstu())
@@ -973,12 +984,14 @@ class PyPhoto(ctk.CTk):
         if not hex_color: return None
         return tuple(int(hex_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4)) + (255,)
 
-    def zmien_czcionke_tekstu(self, wartosc):
-        if self.aktywna_warstwa != -1 and self.warstwy[self.aktywna_warstwa].get('is_text'):
-            self.zapisz_stan_do_historii()
-            self.warstwy[self.aktywna_warstwa]['text_font'] = wartosc
-            self.renderuj_warstwe_tekstu(self.aktywna_warstwa)
-            self.komponuj_i_wyswietl()
+    def zmien_czcionke_tekstu(self, wybor):
+        if self.aktywna_warstwa != -1:
+            w = self.warstwy[self.aktywna_warstwa]
+            if w.get('is_text'):
+                self.zapisz_stan_do_historii()
+                w['text_font'] = wybor
+                self.renderuj_warstwe_tekstu(self.aktywna_warstwa)
+                self.komponuj_i_wyswietl()
 
     def zmien_rozmiar_tekstu(self, wartosc):
         if self.aktywna_warstwa != -1 and self.warstwy[self.aktywna_warstwa].get('is_text'):
@@ -1065,64 +1078,168 @@ class PyPhoto(ctk.CTk):
         self.komponuj_i_wyswietl()
 
     def narysuj_obiekt(self, w):
-        pusta = Image.new("RGBA", self.doc_size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(pusta)
+        ss = 3 
+        w_doc, h_doc = self.doc_size
+        pts = w['obj_pts']
+        rozmiar = w['obj_size']
+        typ = w['obj_typ']
         
-        if w['obj_typ'] == 'shape':
-            shape_type = w['shape_type']
-            rozmiar = w['obj_size']
-            outline_color = w['obj_color']
-            fill_color = w.get('obj_fill_color', None)
-            pts = w['obj_pts']
+        roundness = w.get('obj_roundness', 0) * ss
+        bulge = w.get('obj_bulge', 0.0)
+        
+        if not pts:
+            w['obraz'] = Image.new("RGBA", self.doc_size, (0, 0, 0, 0))
+            return
             
-            # Bezpieczne rozpakowanie dowolnej liczby punktów
+        if typ == 'shape':
             if len(pts) == 6:
-                x1, y1, x2, y2, cx, cy = pts
+                x_coords = [pts[0], pts[2], pts[4]]
+                y_coords = [pts[1], pts[3], pts[5]]
             else:
-                x1, y1, x2, y2 = pts
+                x_coords = [pts[0], pts[2]]
+                y_coords = [pts[1], pts[3]]
+        elif typ == 'pen':
+            x_coords = [p[0] for p in pts]
+            y_coords = [p[1] for p in pts]
             
+        margin = rozmiar + 5
+        if bulge != 0.0:
+            margin += math.hypot(max(x_coords)-min(x_coords), max(y_coords)-min(y_coords)) * abs(bulge)
+            
+        min_x = max(0, int(math.floor(min(x_coords) - margin)))
+        min_y = max(0, int(math.floor(min(y_coords) - margin)))
+        max_x = min(w_doc, int(math.ceil(max(x_coords) + margin)))
+        max_y = min(h_doc, int(math.ceil(max(y_coords) + margin)))
+        
+        box_w = max_x - min_x
+        box_h = max_y - min_y
+        
+        if box_w <= 0 or box_h <= 0:
+            w['obraz'] = Image.new("RGBA", self.doc_size, (0, 0, 0, 0))
+            return
+            
+        pusta_ss = Image.new("RGBA", (box_w * ss, box_h * ss), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(pusta_ss)
+        
+        def loc_p(x, y):
+            return ((x - min_x) * ss, (y - min_y) * ss)
+            
+        outline_color = w['obj_color']
+        fill_color = w.get('obj_fill_color')
+        rozmiar_ss = rozmiar * ss
+        
+        # Generator odkształconych boków (Krzywizna Beziera dla figury)
+        def get_bulged_poly(pts_list):
+            out_pts = []
+            n = len(pts_list)
+            for i in range(n):
+                p1 = pts_list[i]
+                p2 = pts_list[(i+1)%n]
+                dx, dy = p2[0]-p1[0], p2[1]-p1[1]
+                length = math.hypot(dx, dy)
+                if length == 0: continue
+                mx, my = (p1[0]+p2[0])/2, (p1[1]+p2[1])/2
+                nx, ny = -dy/length, dx/length
+                cx = mx + nx * bulge * length * 0.5
+                cy = my + ny * bulge * length * 0.5
+                steps = max(10, int(length/10))
+                for j in range(steps):
+                    t = j / steps
+                    x = (1-t)**2 * p1[0] + 2*(1-t)*t * cx + t**2 * p2[0]
+                    y = (1-t)**2 * p1[1] + 2*(1-t)*t * cy + t**2 * p2[1]
+                    out_pts.append((x, y))
+            return out_pts
+        
+        if typ == 'shape':
+            shape_type = w['shape_type']
+            if len(pts) == 6:
+                px1, py1 = loc_p(pts[0], pts[1])
+                px2, py2 = loc_p(pts[2], pts[3])
+                pcx, pcy = loc_p(pts[4], pts[5])
+            else:
+                px1, py1 = loc_p(pts[0], pts[1])
+                px2, py2 = loc_p(pts[2], pts[3])
+                
             if shape_type in [self.t.get("shape_line", ""), "Linia", "Line"]:
-                draw.line([x1, y1, x2, y2], fill=outline_color, width=rozmiar, joint="curve")
+                if bulge != 0.0:
+                    dx, dy = px2-px1, py2-py1
+                    length = math.hypot(dx, dy)
+                    if length > 0:
+                        nx, ny = -dy/length, dx/length
+                        cx = (px1+px2)/2 + nx * bulge * length * 0.5
+                        cy = (py1+py2)/2 + ny * bulge * length * 0.5
+                        curve_pts = []
+                        steps = max(20, int(length/5))
+                        for i in range(steps + 1):
+                            t = i / steps
+                            x = (1-t)**2 * px1 + 2*(1-t)*t * cx + t**2 * px2
+                            y = (1-t)**2 * py1 + 2*(1-t)*t * cy + t**2 * py2
+                            curve_pts.append((x, y))
+                        draw.line(curve_pts, fill=outline_color, width=rozmiar_ss, joint="curve")
+                else:
+                    draw.line([px1, py1, px2, py2], fill=outline_color, width=rozmiar_ss, joint="curve")
+                    
+            elif shape_type in [self.t.get("shape_rect", ""), "Prostokąt", "Rectangle", self.t.get("shape_rounded", ""), "Zaokr. Prostokąt", "Rounded Rect"]:
+                bx1, by1, bx2, by2 = min(px1, px2), min(py1, py2), max(px1, px2), max(py1, py2)
+                rad = roundness
+                
+                if shape_type in [self.t.get("shape_rounded", ""), "Zaokr. Prostokąt", "Rounded Rect"]:
+                    rad = max(rad, min(abs(bx2-bx1), abs(by2-by1)) // 5)
+                    
+                # --- KLUCZOWA ZMIANA: Zabezpieczenie przed błędem biblioteki Pillow ---
+                max_rad = min(abs(bx2-bx1), abs(by2-by1)) / 2
+                rad = int(max(0, min(rad, max_rad)))
+                
+                if bulge != 0.0:
+                    poly = [(bx1, by1), (bx2, by1), (bx2, by2), (bx1, by2)]
+                    b_pts = get_bulged_poly(poly)
+                    if fill_color: draw.polygon(b_pts, fill=fill_color)
+                    draw.line(b_pts + [b_pts[0]], fill=outline_color, width=rozmiar_ss, joint="curve")
+                elif rad > 0:
+                    draw.rounded_rectangle([bx1, by1, bx2, by2], radius=rad, outline=outline_color, fill=fill_color, width=rozmiar_ss)
+                else:
+                    draw.rectangle([bx1, by1, bx2, by2], outline=outline_color, fill=fill_color, width=rozmiar_ss)
+
+            elif shape_type in [self.t.get("shape_triangle", ""), "Trójkąt", "Triangle"]:
+                bx1, by1, bx2, by2 = min(px1, px2), min(py1, py2), max(px1, px2), max(py1, py2)
+                w_t, h_t = bx2 - bx1, by2 - by1
+                t_pts = [(bx1, by1+h_t), (bx1+w_t/2, by1), (bx2, by1+h_t)]
+                if bulge != 0.0:
+                    b_pts = get_bulged_poly(t_pts)
+                    if fill_color: draw.polygon(b_pts, fill=fill_color)
+                    draw.line(b_pts + [b_pts[0]], fill=outline_color, width=rozmiar_ss, joint="curve")
+                else:
+                    if fill_color: draw.polygon(t_pts, fill=fill_color)
+                    draw.line(t_pts + [t_pts[0]], fill=outline_color, width=rozmiar_ss, joint="curve")
+                    
             elif shape_type in [self.t.get("shape_curve", ""), "Krzywa (Bézier)", "Curve (Bezier)"]:
                 curve_pts = []
-                steps = 40  # Gładkość łuku
+                steps = max(60, int(math.hypot(px2-px1, py2-py1) / 10))
                 for i in range(steps + 1):
                     t = i / steps
-                    x = (1 - t)**2 * x1 + 2 * (1 - t) * t * cx + t**2 * x2
-                    y = (1 - t)**2 * y1 + 2 * (1 - t) * t * cy + t**2 * y2
+                    x = (1 - t)**2 * px1 + 2 * (1 - t) * t * pcx + t**2 * px2
+                    y = (1 - t)**2 * py1 + 2 * (1 - t) * t * pcy + t**2 * py2
                     curve_pts.append((x, y))
-                draw.line(curve_pts, fill=outline_color, width=rozmiar, joint="curve")
-            else:
-                bbox = [min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)]
-                if shape_type in [self.t.get("shape_rect", ""), "Prostokąt", "Rectangle"]:
-                    draw.rectangle(bbox, outline=outline_color, fill=fill_color, width=rozmiar)
-                elif shape_type in [self.t.get("shape_ellipse", ""), "Elipsa", "Ellipse"]:
-                    draw.ellipse(bbox, outline=outline_color, fill=fill_color, width=rozmiar)
-                elif shape_type in [self.t.get("shape_triangle", ""), "Trójkąt", "Triangle"]:
-                    bx1, by1, bx2, by2 = bbox
-                    w_t = bx2 - bx1
-                    h_t = by2 - by1
-                    t_pts = [(bx1, by1+h_t), (bx1+w_t/2, by1), (bx2, by1+h_t)]
-                    draw.polygon(t_pts, outline=outline_color, fill=fill_color, width=rozmiar)
-                elif shape_type in [self.t.get("shape_rounded", ""), "Zaokr. Prostokąt", "Rounded Rect"]:
-                    bx1, by1, bx2, by2 = bbox
-                    radius = max(1, min(abs(bx2-bx1), abs(by2-by1)) // 5)
-                    draw.rounded_rectangle(bbox, radius=radius, outline=outline_color, fill=fill_color, width=rozmiar)
+                draw.line(curve_pts, fill=outline_color, width=rozmiar_ss, joint="curve")
                 
-        elif w['obj_typ'] == 'pen':
-            rozmiar = w['obj_size']
-            outline_color = w['obj_color']
-            fill_color = w.get('obj_fill_color')
+            elif shape_type in [self.t.get("shape_ellipse", ""), "Elipsa", "Ellipse"]:
+                bbox = [min(px1, px2), min(py1, py2), max(px1, px2), max(py1, py2)]
+                draw.ellipse(bbox, outline=outline_color, fill=fill_color, width=rozmiar_ss)
+                
+        elif typ == 'pen':
+            loc_pts = [loc_p(p[0], p[1]) for p in pts]
             is_closed = w.get('is_closed', False)
-            
-            if len(w['obj_pts']) == 1:
-                px, py = w['obj_pts'][0]
-                draw.ellipse([px - rozmiar//2, py - rozmiar//2, px + rozmiar//2, py + rozmiar//2], fill=outline_color)
-            elif len(w['obj_pts']) > 1:
-                if is_closed and fill_color and len(w['obj_pts']) > 2:
-                    draw.polygon(w['obj_pts'], fill=fill_color)
-                draw.line(w['obj_pts'], fill=outline_color, width=rozmiar, joint="curve")
+            if len(loc_pts) == 1:
+                cx, cy = loc_pts[0]
+                draw.ellipse([cx - rozmiar_ss//2, cy - rozmiar_ss//2, cx + rozmiar_ss//2, cy + rozmiar_ss//2], fill=outline_color)
+            elif len(loc_pts) > 1:
+                if is_closed and fill_color and len(loc_pts) > 2:
+                    draw.polygon(loc_pts, fill=fill_color)
+                draw.line(loc_pts, fill=outline_color, width=rozmiar_ss, joint="curve")
                 
+        rendered_box = pusta_ss.resize((box_w, box_h), Image.Resampling.LANCZOS)
+        pusta = Image.new("RGBA", self.doc_size, (0, 0, 0, 0))
+        pusta.paste(rendered_box, (min_x, min_y))
         w['obraz'] = pusta
         
     def wybierz_kolor_linii(self):
@@ -1898,6 +2015,16 @@ class PyPhoto(ctk.CTk):
         if hasattr(self, 'slider_exposure'): self.slider_exposure.set(0.0)
         if hasattr(self, 'slider_white_balance'): self.slider_white_balance.set(0.0)
         self.blokuj_podglad = False
+    
+    def aktualizuj_wlasciwosci_obiektu(self, _=None):
+        if self.aktywna_warstwa != -1:
+            w = self.warstwy[self.aktywna_warstwa]
+            if w.get('is_object'):
+                w['obj_size'] = int(self.slider_size.get())
+                w['obj_roundness'] = int(self.slider_roundness.get())
+                w['obj_bulge'] = int(self.slider_bulge.get()) / 100.0
+                self.narysuj_obiekt(w)
+                self.komponuj_i_wyswietl()
 
     def nałoż_filtr(self, filter_type):
         if self.aktywna_warstwa == -1: return
@@ -2146,6 +2273,8 @@ class PyPhoto(ctk.CTk):
                 'obj_size': rozmiar,
                 'is_closed': is_closed
             }
+            nowa_w['obj_roundness'] = int(self.slider_roundness.get()) if hasattr(self, 'slider_roundness') else 0
+            nowa_w['obj_bulge'] = (int(self.slider_bulge.get()) / 100.0) if hasattr(self, 'slider_bulge') else 0.0
             self.narysuj_obiekt(nowa_w)
             self.warstwy.insert(idx, nowa_w)
             self.ustaw_aktywna_warstwe(idx)
@@ -2365,6 +2494,10 @@ class PyPhoto(ctk.CTk):
             self.zapisz_stan_do_historii()
             self.move_start_x = x
             self.move_start_y = y
+            if w and self.akcja_myszy == 'sel_move' and w.get('is_object'):
+                self.slider_size.set(w.get('obj_size', 5))
+                if hasattr(self, 'slider_roundness'): self.slider_roundness.set(w.get('obj_roundness', 0))
+                if hasattr(self, 'slider_bulge'): self.slider_bulge.set(int(w.get('obj_bulge', 0.0) * 100))
             if w:
                 self.move_start_offset_x = w.get('offset_x', 0)
                 self.move_start_offset_y = w.get('offset_y', 0)

@@ -475,7 +475,7 @@ class PyPhoto(ctk.CTk):
         self.btn_color_fill.pack(side="left", expand=True, fill="x", padx=(0, 2))
         
         self.btn_no_fill = ctk.CTkButton(ramka_fill, text="X", width=32, height=32, corner_radius=6, command=self.usun_kolor_tla, fg_color="transparent", border_width=1, border_color="#aa0000", text_color="#aa0000", hover_color="#550000")
-        # --- SEKCJA SUWAKÓW KSZTAŁTU I LINII ---
+       
         self.lbl_size = ctk.CTkLabel(self.panel_narzedzi, text=self.t.get("size", "Grubość:"), anchor="w")
         self.lbl_size.pack(fill="x", padx=15, pady=(15, 0))
         self.slider_size = ctk.CTkSlider(self.panel_narzedzi, from_=1, to=100, command=self.aktualizuj_wlasciwosci_obiektu)
@@ -494,7 +494,6 @@ class PyPhoto(ctk.CTk):
         self.slider_bulge.set(0)
         self.slider_bulge.pack(fill="x", padx=10, pady=(0, 10))
         
-        # --- SEKCJA TEKSTOWA (CZCIONKA I ROZMIAR) ---
         self.lbl_select_font = ctk.CTkLabel(self.panel_narzedzi, text=self.t.get("select_font", "Wybierz czcionkę:"), anchor="w", font=ctk.CTkFont(size=13, weight="bold"))
         self.lbl_select_font.pack(fill="x", padx=15, pady=(10, 2))
         
@@ -743,7 +742,7 @@ class PyPhoto(ctk.CTk):
         add_icon_cmd(menu_obraz, self.t["flip_h"], self.odbij_w_poziomie, "flip_h")
         add_icon_cmd(menu_obraz, self.t["flip_v"], self.odbij_w_pionie, "flip_v")
         menu_obraz.add_separator()
-        add_icon_cmd(menu_obraz, self.t.get("toggle_grid", "Pokaż / Ukryj siatkę"), self.przelacz_siatke) # <--- DODANE
+        add_icon_cmd(menu_obraz, self.t.get("toggle_grid", "Pokaż / Ukryj siatkę"), self.przelacz_siatke) 
         add_icon_cmd(menu_obraz, self.t["remove_bg"], self.usun_tlo, "remove_bg")
         menubar.add_cascade(label=self.t.get("menu_image", "Obraz"), menu=menu_obraz)
         
@@ -880,7 +879,6 @@ class PyPhoto(ctk.CTk):
                 is_closing = True
                 
         if not is_closing:
-            # Magiczna funkcja, która przykleja myszkę do siatki!
             rx, ry = self.get_snapped_coords(ex, ey)
             
         ex, ey = self.image_to_canvas_coords(rx, ry)
@@ -1128,7 +1126,6 @@ class PyPhoto(ctk.CTk):
         fill_color = w.get('obj_fill_color')
         rozmiar_ss = rozmiar * ss
         
-        # Generator odkształconych boków (Krzywizna Beziera dla figury)
         def get_bulged_poly(pts_list):
             out_pts = []
             n = len(pts_list)
@@ -1186,7 +1183,6 @@ class PyPhoto(ctk.CTk):
                 if shape_type in [self.t.get("shape_rounded", ""), "Zaokr. Prostokąt", "Rounded Rect"]:
                     rad = max(rad, min(abs(bx2-bx1), abs(by2-by1)) // 5)
                     
-                # --- KLUCZOWA ZMIANA: Zabezpieczenie przed błędem biblioteki Pillow ---
                 max_rad = min(abs(bx2-bx1), abs(by2-by1)) / 2
                 rad = int(max(0, min(rad, max_rad)))
                 
@@ -1578,7 +1574,6 @@ class PyPhoto(ctk.CTk):
         
         if w.get('is_object') and w['obj_typ'] == 'shape':
             pts = w['obj_pts']
-            # --- ZABEZPIECZENIE: Rysowanie obwódki dla dowolnej liczby punktów ---
             if len(pts) == 6:
                 x1, y1, x2, y2, cx, cy = pts
                 min_x, max_x = min(x1, x2, cx), max(x1, x2, cx)
@@ -1734,9 +1729,8 @@ class PyPhoto(ctk.CTk):
         
         okno_szer = self.canvas.winfo_width()
         okno_wys = self.canvas.winfo_height()
-        r_size = 22 # Grubość paska linijki
+        r_size = 22 
         
-        # Paski tła linijki (lewy i górny) oraz lewy górny róg
         self.canvas.create_rectangle(0, 0, okno_szer, r_size, fill="#2a2a2a", outline="", tags="ruler")
         self.canvas.create_rectangle(0, 0, r_size, okno_wys, fill="#2a2a2a", outline="", tags="ruler")
         self.canvas.create_rectangle(0, 0, r_size, r_size, fill="#1a1a1a", outline="", tags="ruler") 
@@ -1744,7 +1738,6 @@ class PyPhoto(ctk.CTk):
         r_x = self.display_width / self.doc_size[0]
         r_y = self.display_height / self.doc_size[1]
         
-        # Obliczanie "mądrego" skoku podziałki zależnie od powiększenia
         step = 100
         if r_x > 3: step = 10
         elif r_x > 1.2: step = 50
@@ -1754,7 +1747,6 @@ class PyPhoto(ctk.CTk):
         font = ("Arial", 9)
         c_tick = "#aaaaaa"
         
-        # Renderowanie linijki poziomej (X)
         s_x = int(-self.canvas_img_x_offset / r_x)
         e_x = int((okno_szer - self.canvas_img_x_offset) / r_x)
         for i in range(s_x - (s_x % minor_step), e_x + minor_step, minor_step):
@@ -1766,7 +1758,6 @@ class PyPhoto(ctk.CTk):
                 else:
                     self.canvas.create_line(cx, r_size - 4, cx, r_size, fill=c_tick, tags="ruler")
                     
-        # Renderowanie linijki pionowej (Y)
         s_y = int(-self.canvas_img_y_offset / r_y)
         e_y = int((okno_wys - self.canvas_img_y_offset) / r_y)
         for i in range(s_y - (s_y % minor_step), e_y + minor_step, minor_step):
@@ -1798,14 +1789,13 @@ class PyPhoto(ctk.CTk):
         self.canvas_img_x_offset = (okno_szer - self.display_width) // 2
         self.canvas_img_y_offset = (okno_wys - self.display_height) // 2
         
-        # Jaśniejsze tło wyznaczające granice przezroczystego obszaru roboczego
         self.canvas.create_rectangle(
             self.canvas_img_x_offset, 
             self.canvas_img_y_offset, 
             self.canvas_img_x_offset + self.display_width, 
             self.canvas_img_y_offset + self.display_height, 
             fill="gray35",       
-            outline="#555555",   
+            outline="#8F8F8F",   
             tags="doc_bg"
         )
         
@@ -1852,8 +1842,7 @@ class PyPhoto(ctk.CTk):
             
             wb = getattr(self, 'slider_white_balance', None)
             wb_val = wb.get() if wb else 0.0
-            
-            # Skalujemy wektor matematycznie tylko wtedy, gdy żaden filtr barwny nie był dotykany
+       
             is_only_scale = (b_val == 1.0 and c_val == 1.0 and s_val == 1.0 and sh_val == 1.0 and exp_val == 0.0 and wb_val == 0.0 and sc_val != 1.0)
             
             if is_only_scale and (w.get('is_object') or w.get('is_text')):
@@ -1962,7 +1951,6 @@ class PyPhoto(ctk.CTk):
 
         img = self.warstwy[self.aktywna_warstwa]['obraz'].copy()
         
-        # Pobieranie wartości suwaków
         e_w = getattr(self, 'slider_exposure', None)
         exp = e_w.get() if e_w else 0.0
         
@@ -2179,7 +2167,6 @@ class PyPhoto(ctk.CTk):
         oy = w.get('offset_y', 0)
         if w.get('is_object') and w['obj_typ'] == 'shape':
             pts = w['obj_pts']
-            # Ochrona przed różną ilością węzłów (np. krzywa 6-punktowa)
             if len(pts) == 6:
                 x1, y1, x2, y2, cx, cy = pts
                 min_x, max_x = min(x1, x2, cx) + ox, max(x1, x2, cx) + ox
@@ -2303,7 +2290,6 @@ class PyPhoto(ctk.CTk):
             
             nazwa = f"K: {shape_type[:5]}"
             idx = self.aktywna_warstwa + 1 if self.aktywna_warstwa != -1 else 0
-            # Jeśli to krzywa, dodajemy środek jako punkt kontrolny
             if shape_type in [self.t.get("shape_curve", ""), "Krzywa (Bézier)", "Curve (Bezier)"]:
                 obj_pts = [rx1, ry1, rx2, ry2, (rx1+rx2)/2, (ry1+ry2)/2]
             else:
